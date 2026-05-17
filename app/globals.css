@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --color-canvas: #FAF7F2;
+  --color-canvas: #E2D9F3;
   /* Soft Cream/Almond paper background */
   --color-espresso: #2D2A26;
   /* Soft deep charcoal for text */
