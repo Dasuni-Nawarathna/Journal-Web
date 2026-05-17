@@ -1,9 +1,2 @@
-import Workspace from '../components/Workspace';
-
-export default function Home() {
-  return (
-    <main>
-      <Workspace />
-    </main>
-  );
-}
+import AuthForm from '../components/AuthForm';
+export default function Home() { return <main><AuthForm /></main>; }
