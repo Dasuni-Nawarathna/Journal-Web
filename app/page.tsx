@@ -1,9 +1,9 @@
-import AuthForm from '../components/AuthForm';
+import Workspace from '../components/Workspace';
 
 export default function Home() {
   return (
     <main>
-      <AuthForm />
+      <Workspace />
     </main>
   );
 }
