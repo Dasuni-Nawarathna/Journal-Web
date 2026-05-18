@@ -2,10 +2,12 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import { supabase } from '../lib/supabaseClient';
 import { Heart, Sparkles, Lock, Mail, User } from 'lucide-react';
 
 export default function AuthForm() {
+    const router = useRouter();
     const [isSignUp, setIsSignUp] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -20,7 +22,8 @@ export default function AuthForm() {
 
         try {
             if (isSignUp) {
-                const { error } = await supabase.auth.signUp({
+                // 1. Create the auth user
+                const { data, error } = await supabase.auth.signUp({
                     email,
                     password,
                     options: {
@@ -28,12 +31,42 @@ export default function AuthForm() {
                     },
                 });
                 if (error) throw error;
-                setMessage({ type: 'success', text: '✨ Check your email for the confirmation link!' });
+
+                // 2. Insert profile record fallback
+                if (data.user) {
+                    await supabase.from('profiles').upsert({
+                        id: data.user.id,
+                        email: data.user.email,
+                        display_name: displayName,
+                        created_at: new Date().toISOString(),
+                    }, { onConflict: 'id' });
+                }
+
+                // 3. Immediately log out the automatically logged-in session (since confirm is disabled)
+                await supabase.auth.signOut();
+
+                // 4. Reset form fields and switch to Sign In mode
+                setIsSignUp(false);
+                setMessage({
+                    type: 'success',
+                    text: '✨ Account created successfully! Please sign in with your credentials below.',
+                });
             } else {
-                const { error } = await supabase.auth.signInWithPassword({ email, password });
+                // Sign In
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
                 if (error) throw error;
-                setMessage({ type: 'success', text: '🌸 Welcome back to your cozy space!' });
-                // We will route them to the dashboard here later!
+
+                // Upsert profile in case it was never created (e.g. after email confirm)
+                if (data.user) {
+                    await supabase.from('profiles').upsert({
+                        id: data.user.id,
+                        email: data.user.email,
+                        display_name: data.user.user_metadata?.display_name || email.split('@')[0],
+                        created_at: new Date().toISOString(),
+                    }, { onConflict: 'id' });
+                }
+
+                router.push('/workspace');
             }
         } catch (error: any) {
             setMessage({ type: 'error', text: error.message || 'Something went wrong.' });
@@ -74,7 +107,7 @@ export default function AuthForm() {
 
                     <div className="text-xs text-espresso/50 flex items-center gap-1 z-10">
                         <Sparkles className="w-3.5 h-3.5 text-lavender" />
-                        <span>Encrypted & secure with biometric readiness.</span>
+                        <span>Encrypted &amp; secure with biometric readiness.</span>
                     </div>
                 </div>
 
