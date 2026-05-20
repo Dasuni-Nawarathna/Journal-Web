@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --color-canvas: #E2D9F3;
+  --color-canvas: #FAF7F2;
   /* Soft Cream/Almond paper background */
   --color-espresso: #2D2A26;
   /* Soft deep charcoal for text */
@@ -18,4 +18,39 @@ body {
   color: var(--color-espresso);
   font-family: Arial, Helvetica, sans-serif;
   margin: 0;
+}
+
+/* Force visible caret and cursor on all text inputs */
+textarea,
+input[type="text"] {
+  caret-color: #2D2A26 !important;
+  cursor: text !important;
+  -webkit-user-select: text !important;
+  user-select: text !important;
+  position: relative;
+  z-index: 25;
+}
+
+textarea:focus,
+input[type="text"]:focus {
+  caret-color: #2D2A26 !important;
+  outline: none;
+}
+
+/* Text selection highlight styling */
+::selection {
+  background-color: rgba(226, 217, 243, 0.5);
+  color: #2D2A26;
+}
+
+/* Ensure smooth scrollbar */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(45, 42, 38, 0.15);
+  border-radius: 999px;
 }
