@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabaseClient';
 import { useRouter } from 'next/navigation';
@@ -27,13 +27,28 @@ import {
   FileText 
 } from 'lucide-react';
 
+// Sticker Data Model Spec
+interface PlacedSticker {
+  id: string;
+  type: string;
+  emoji: string;
+  x: number; // Percentage from left, bounds 0 to 100
+  y: number; // Percentage from top, bounds 0 to 100
+}
+
 export default function Workspace() {
   const router = useRouter();
+  
+  // Drag constraints reference pointer
+  const notebookRef = useRef<HTMLDivElement>(null);
   
   // Notebook states
   const [title, setTitle] = useState('');
   const [journalText, setJournalText] = useState('');
   const [selectedMood, setSelectedMood] = useState('🌸');
+  
+  // Draggable Sticker layer states
+  const [stickers, setStickers] = useState<PlacedSticker[]>([]);
   
   // Date Selection States
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -66,6 +81,9 @@ export default function Workspace() {
   const [dateString, setDateString] = useState<string>('');
 
   const moods = ['🌸', '☀️', '☁️', '🍂', '🎀', '🧸'];
+  
+  // Cute stickers list for selection
+  const stickerOptions = ['🧸', '🎀', '🌸', '✨', '☕', '📖', '🐈', '🍮', '🍓', '🍰', '🥐', '🧁', '⭐', '🎈', '🎨', '🍀'];
 
   // Update live clock every second
   useEffect(() => {
@@ -153,7 +171,7 @@ export default function Workspace() {
   };
 
   // Find and load memory for a selected date
-  const loadEntryForDate = (date: Date, entriesList = allEntries, uid = userId) => {
+  const loadEntryForDate = async (date: Date, entriesList = allEntries, uid = userId) => {
     if (!uid) return;
     const targetDateStr = formatDateString(date);
     
@@ -170,12 +188,41 @@ export default function Workspace() {
       // Decrypt journal content
       const decrypted = decryptData(foundEntry.content, uid);
       setJournalText(decrypted || '');
+      
+      // Fetch stickers linked to this journal entry
+      await fetchStickersForEntry(foundEntry.id);
     } else {
       // Clear fields to write a new entry
       setLoadedEntryId(null);
       setTitle('');
       setJournalText('');
       setSelectedMood('🌸');
+      setStickers([]);
+    }
+  };
+
+  // Fetch stickers linked to a specific entry
+  const fetchStickersForEntry = async (entryId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('entry_stickers')
+        .select('*')
+        .eq('entry_id', entryId);
+
+      if (!error && data) {
+        setStickers(data.map((s: any) => ({
+          id: s.id,
+          type: s.type || 'emoji',
+          emoji: s.emoji,
+          x: Number(s.x),
+          y: Number(s.y)
+        })));
+      } else {
+        setStickers([]);
+      }
+    } catch (e) {
+      console.error('Error fetching stickers:', e);
+      setStickers([]);
     }
   };
 
@@ -220,7 +267,7 @@ export default function Workspace() {
     setIsProfileOpen(true);
   };
 
-  // Save or Update entry in your live Postgres Database
+  // Save or Update entry in your live Postgres Database (with nested sticker synchronization)
   const handleSavePage = async () => {
     if (!journalText.trim()) {
       setSaveStatus({ type: 'error', text: '🍉 The page is completely empty! Write down a thought first.' });
@@ -238,9 +285,10 @@ export default function Workspace() {
     try {
       const encryptedContent = encryptData(journalText, userId);
       const entryDateStr = formatDateString(selectedDate);
+      let entryId = loadedEntryId;
 
       if (loadedEntryId) {
-        // UPDATE existing entry
+        // 1. UPDATE existing entry
         const { error } = await supabase
           .from('journal_entries')
           .update({
@@ -251,9 +299,8 @@ export default function Workspace() {
           .eq('id', loadedEntryId);
 
         if (error) throw error;
-        setSaveStatus({ type: 'success', text: '✨ Memory updated successfully in your archive.' });
       } else {
-        // CREATE new entry
+        // 2. CREATE new entry
         const { data, error } = await supabase
           .from('journal_entries')
           .insert([
@@ -269,10 +316,38 @@ export default function Workspace() {
 
         if (error) throw error;
         if (data && data[0]) {
-          setLoadedEntryId(data[0].id);
+          entryId = data[0].id;
+          setLoadedEntryId(entryId);
         }
-        setSaveStatus({ type: 'success', text: '✨ Saved and securely locked inside your secret archive.' });
       }
+
+      // 3. STICKERS SYNCHRONIZATION ROUTINE
+      if (entryId) {
+        // Clear old stickers first to avoid double entries
+        await supabase
+          .from('entry_stickers')
+          .delete()
+          .eq('entry_id', entryId);
+
+        // Bundle coordinates and push new sticker placements
+        if (stickers.length > 0) {
+          const stickersToInsert = stickers.map(s => ({
+            entry_id: entryId,
+            emoji: s.emoji,
+            x: s.x,
+            y: s.y,
+            type: s.type
+          }));
+
+          const { error: stickerError } = await supabase
+            .from('entry_stickers')
+            .insert(stickersToInsert);
+
+          if (stickerError) throw stickerError;
+        }
+      }
+
+      setSaveStatus({ type: 'success', text: '✨ Saved and securely locked inside your secret archive.' });
 
       // Refresh list
       await fetchUserEntries(userId);
@@ -308,6 +383,7 @@ export default function Workspace() {
       setTitle('');
       setJournalText('');
       setSelectedMood('🌸');
+      setStickers([]);
       
       // Refresh list
       await fetchUserEntries(userId);
@@ -326,6 +402,42 @@ export default function Workspace() {
     } catch (error) {
       console.error('Error signing out:', error);
     }
+  };
+
+  // Add a new sticker option to center of paper canvas
+  const handleAddSticker = (emoji: string) => {
+    const newSticker: PlacedSticker = {
+      id: Math.random().toString(36).substring(2, 9),
+      type: 'emoji',
+      emoji,
+      x: 50, // Center coordinate default
+      y: 45
+    };
+    setStickers(prev => [...prev, newSticker]);
+  };
+
+  // Double click to remove sticker
+  const handleDoubleClickSticker = (id: string) => {
+    setStickers(prev => prev.filter(s => s.id !== id));
+  };
+
+  // Extract offset drag values, convert to relative percentage, and update coordinates state
+  const handleDragEnd = (id: string, info: any) => {
+    if (!notebookRef.current) return;
+    
+    const rect = notebookRef.current.getBoundingClientRect();
+    
+    // Convert client coordinates relative to container size
+    const relativeX = ((info.point.x - rect.left) / rect.width) * 100;
+    const relativeY = ((info.point.y - rect.top) / rect.height) * 100;
+    
+    // Keep bounded within 0% to 100% boundary limit constraints
+    const clampedX = Math.max(2, Math.min(98, relativeX));
+    const clampedY = Math.max(2, Math.min(98, relativeY));
+
+    setStickers(prev => prev.map(s => 
+      s.id === id ? { ...s, x: clampedX, y: clampedY } : s
+    ));
   };
 
   // Calendar builder helper logic
@@ -544,33 +656,67 @@ export default function Workspace() {
             )}
           </AnimatePresence>
 
-          <motion.div 
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex-1 bg-white rounded-3xl shadow-xl shadow-espresso/[0.02] border border-blush/20 p-6 flex flex-col relative min-h-[500px]"
-          >
-            {/* Soft decorative binding ring holes to feel tactile like real paper */}
-            <div className="absolute left-4 top-0 bottom-0 flex flex-col justify-around py-12 pointer-events-none">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="w-2.5 h-2.5 bg-canvas border border-blush/30 rounded-full shadow-inner" />
-              ))}
-            </div>
+          <div className="flex-1 flex flex-col relative">
+            <motion.div 
+              ref={notebookRef}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex-1 bg-white rounded-3xl shadow-xl shadow-espresso/[0.02] border border-blush/20 p-6 flex flex-col relative min-h-[500px] overflow-hidden select-none"
+            >
+              {/* Draggable Scrapbook Sticker Layer Container */}
+              <div className="absolute inset-0 pointer-events-none z-10">
+                <AnimatePresence>
+                  {stickers.map((sticker) => (
+                    <motion.div
+                      key={sticker.id}
+                      drag
+                      dragConstraints={notebookRef}
+                      dragElastic={0.02}
+                      dragMomentum={false}
+                      onDragEnd={(event, info) => handleDragEnd(sticker.id, info)}
+                      onDoubleClick={() => handleDoubleClickSticker(sticker.id)}
+                      style={{
+                        position: 'absolute',
+                        left: `${sticker.x}%`,
+                        top: `${sticker.y}%`,
+                        transform: 'translate(-50%, -50%)',
+                        cursor: 'grab',
+                        fontSize: '1.8rem',
+                        zIndex: 30,
+                        pointerEvents: 'auto'
+                      }}
+                      whileDrag={{ scale: 1.25, cursor: 'grabbing', zIndex: 40 }}
+                      className="select-none active:scale-110 transition-transform select-none"
+                      title="Drag to place, double-click to delete!"
+                    >
+                      {sticker.emoji}
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
 
-            {/* Notebook Content Workspace */}
-            <div className="pl-6 flex-1 flex flex-col space-y-4">
-              
-              {/* Selected date tag */}
-              <div className="flex items-center justify-between border-b border-canvas pb-3">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-espresso/40">
-                  Selected page: {selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                </span>
-                {loadedEntryId ? (
-                  <span className="text-[9px] bg-sage/55 text-espresso font-semibold uppercase px-2 py-0.5 rounded-full">
-                    Saved Memory
+              {/* Soft decorative binding ring holes to feel tactile like real paper */}
+              <div className="absolute left-4 top-0 bottom-0 flex flex-col justify-around py-12 pointer-events-none z-0">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="w-2.5 h-2.5 bg-canvas border border-blush/30 rounded-full shadow-inner" />
+                ))}
+              </div>
+
+              {/* Notebook Content Workspace */}
+              <div className="pl-6 flex-1 flex flex-col space-y-4 z-0">
+                
+                {/* Selected date tag */}
+                <div className="flex items-center justify-between border-b border-canvas pb-3">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-espresso/40">
+                    Selected page: {selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                   </span>
-                ) : (
-                  <span className="text-[9px] bg-canvas text-espresso/50 font-semibold uppercase px-2 py-0.5 rounded-full">
-                    New Blank Page
+                  {loadedEntryId ? (
+                    <span className="text-[9px] bg-sage/55 text-espresso font-semibold uppercase px-2 py-0.5 rounded-full">
+                      Saved Memory
+                    </span>
+                  ) : (
+                    <span className="text-[9px] bg-canvas text-espresso/50 font-semibold uppercase px-2 py-0.5 rounded-full">
+                      New Blank Page
                   </span>
                 )}
               </div>
@@ -612,7 +758,7 @@ export default function Workspace() {
             </div>
 
             {/* Quick Canvas Actions Footer */}
-            <div className="mt-4 pt-4 border-t border-canvas flex justify-between items-center pl-6">
+            <div className="mt-4 pt-4 border-t border-canvas flex justify-between items-center pl-6 z-10">
               
               {/* Delete button (displays only if editing an existing post) */}
               <div>
@@ -640,10 +786,35 @@ export default function Workspace() {
             </div>
           </motion.div>
         </div>
+      </div>
 
-        {/* Right Column: Past Memories list (3 Cols) */}
-        <div className="lg:col-span-3 space-y-4">
-          <div className="bg-white/50 backdrop-blur-sm p-4 rounded-3xl border border-blush/10 flex flex-col h-[500px]">
+        {/* Right Column: Past Memories & Scrapbook Sticker Drawer (3 Cols) */}
+        <div className="lg:col-span-3 space-y-4 flex flex-col">
+          
+          {/* Draggable Sticker Kit Drawer */}
+          <div className="bg-white/60 backdrop-blur-md p-4 rounded-3xl border border-blush/10 shadow-sm space-y-3">
+            <div className="text-xs font-semibold uppercase tracking-wider text-espresso/80 flex items-center gap-1.5 pb-2 border-b border-canvas">
+              <Smile className="w-4 h-4 text-lavender animate-bounce" />
+              <span>Scrapbook Sticker Drawer</span>
+            </div>
+            <p className="text-[10px] text-espresso/50 leading-relaxed">
+              Click a sticker to place it, then drag it anywhere! Double-click to remove.
+            </p>
+            <div className="grid grid-cols-4 gap-2.5 pt-1">
+              {stickerOptions.map((emoji) => (
+                <button
+                  key={emoji}
+                  onClick={() => handleAddSticker(emoji)}
+                  className="text-2xl p-1.5 rounded-xl hover:bg-canvas transition-all active:scale-90 cursor-pointer hover:rotate-6 flex items-center justify-center"
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Past Memories list */}
+          <div className="bg-white/50 backdrop-blur-sm p-4 rounded-3xl border border-blush/10 flex flex-col flex-1 h-[270px]">
             <div className="text-xs font-semibold uppercase tracking-wider text-espresso/80 flex items-center gap-1.5 pb-3 border-b border-canvas">
               <BookOpen className="w-4 h-4 text-sage" />
               <span>Memories Logs</span>
