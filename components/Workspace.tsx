@@ -49,6 +49,7 @@ export default function Workspace() {
   
   // Draggable Sticker layer states
   const [stickers, setStickers] = useState<PlacedSticker[]>([]);
+  const [activeStickerId, setActiveStickerId] = useState<string | null>(null);
   
   // Date Selection States
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -416,9 +417,24 @@ export default function Workspace() {
     setStickers(prev => [...prev, newSticker]);
   };
 
-  // Double click to remove sticker
-  const handleDoubleClickSticker = (id: string) => {
+  // Remove individual sticker
+  const handleRemoveSticker = (id: string) => {
     setStickers(prev => prev.filter(s => s.id !== id));
+    if (activeStickerId === id) {
+      setActiveStickerId(null);
+    }
+  };
+
+  // Undo the last sticker placement
+  const handleUndoSticker = () => {
+    setStickers(prev => prev.slice(0, -1));
+    setActiveStickerId(null);
+  };
+
+  // Clear all stickers from current page
+  const handleClearStickers = () => {
+    setStickers([]);
+    setActiveStickerId(null);
   };
 
   // Extract offset drag values, convert to relative percentage, and update coordinates state
@@ -661,37 +677,61 @@ export default function Workspace() {
               ref={notebookRef}
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
+              onClick={() => setActiveStickerId(null)}
               className="flex-1 bg-white rounded-3xl shadow-xl shadow-espresso/[0.02] border border-blush/20 p-6 flex flex-col relative min-h-[500px] overflow-hidden select-none"
             >
               {/* Draggable Scrapbook Sticker Layer Container */}
-              <div className="absolute inset-0 pointer-events-none z-10">
+              <div 
+                className="absolute inset-0 pointer-events-none z-10"
+                onClick={() => setActiveStickerId(null)}
+              >
                 <AnimatePresence>
-                  {stickers.map((sticker) => (
-                    <motion.div
-                      key={sticker.id}
-                      drag
-                      dragConstraints={notebookRef}
-                      dragElastic={0.02}
-                      dragMomentum={false}
-                      onDragEnd={(event, info) => handleDragEnd(sticker.id, info)}
-                      onDoubleClick={() => handleDoubleClickSticker(sticker.id)}
-                      style={{
-                        position: 'absolute',
-                        left: `${sticker.x}%`,
-                        top: `${sticker.y}%`,
-                        transform: 'translate(-50%, -50%)',
-                        cursor: 'grab',
-                        fontSize: '1.8rem',
-                        zIndex: 30,
-                        pointerEvents: 'auto'
-                      }}
-                      whileDrag={{ scale: 1.25, cursor: 'grabbing', zIndex: 40 }}
-                      className="select-none active:scale-110 transition-transform select-none"
-                      title="Drag to place, double-click to delete!"
-                    >
-                      {sticker.emoji}
-                    </motion.div>
-                  ))}
+                  {stickers.map((sticker) => {
+                    const isActive = activeStickerId === sticker.id;
+                    return (
+                      <motion.div
+                        key={sticker.id}
+                        drag
+                        dragConstraints={notebookRef}
+                        dragElastic={0.02}
+                        dragMomentum={false}
+                        onDragEnd={(event, info) => handleDragEnd(sticker.id, info)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveStickerId(isActive ? null : sticker.id);
+                        }}
+                        style={{
+                          position: 'absolute',
+                          left: `${sticker.x}%`,
+                          top: `${sticker.y}%`,
+                          transform: 'translate(-50%, -50%)',
+                          cursor: 'grab',
+                          fontSize: '1.8rem',
+                          zIndex: isActive ? 45 : 30,
+                          pointerEvents: 'auto',
+                          userSelect: 'none'
+                        }}
+                        whileDrag={{ scale: 1.25, cursor: 'grabbing', zIndex: 50 }}
+                        className={`transition-all ${isActive ? 'ring-2 ring-lavender/60 ring-offset-2 rounded-xl p-1 bg-white/30 backdrop-blur-[1px]' : ''}`}
+                        title="Click to select, drag to place!"
+                      >
+                        {sticker.emoji}
+                        
+                        {/* Accessible Remove Button Overlay */}
+                        {isActive && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveSticker(sticker.id);
+                            }}
+                            className="absolute -top-3 -right-3 w-5 h-5 bg-rose-500 hover:bg-rose-600 text-white rounded-full flex items-center justify-center shadow-lg transition-colors cursor-pointer text-[10px] font-bold border border-white"
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </motion.div>
+                    );
+                  })}
                 </AnimatePresence>
               </div>
 
@@ -798,8 +838,27 @@ export default function Workspace() {
               <span>Scrapbook Sticker Drawer</span>
             </div>
             <p className="text-[10px] text-espresso/50 leading-relaxed">
-              Click a sticker to place it, then drag it anywhere! Double-click to remove.
+              Click a sticker to place it, then drag it anywhere! Click to select and click (✕) to delete.
             </p>
+            
+            {/* Draggable controls (Undo / Clear) */}
+            <div className="flex gap-2 pt-0.5 pb-2 border-b border-canvas/40">
+              <button
+                onClick={handleUndoSticker}
+                disabled={stickers.length === 0}
+                className="flex-1 text-[10px] py-1 bg-lavender/30 hover:bg-lavender/50 text-espresso font-semibold rounded-lg transition-all active:scale-95 disabled:opacity-40 cursor-pointer text-center font-medium"
+              >
+                ⏪ Undo last
+              </button>
+              <button
+                onClick={handleClearStickers}
+                disabled={stickers.length === 0}
+                className="flex-1 text-[10px] py-1 bg-rose-50 hover:bg-rose-100 text-rose-500 font-semibold rounded-lg transition-all active:scale-95 disabled:opacity-40 cursor-pointer text-center font-medium"
+              >
+                🗑️ Clear all
+              </button>
+            </div>
+
             <div className="grid grid-cols-4 gap-2.5 pt-1">
               {stickerOptions.map((emoji) => (
                 <button
