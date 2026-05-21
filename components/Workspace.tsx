@@ -134,6 +134,32 @@ export default function Workspace() {
     return map[mood] || { backgroundColor: 'rgba(226, 217, 243, 0.5)', borderColor: 'rgba(196, 181, 253, 0.5)' };
   };
 
+  // Mood → full-page background gradient (whole workspace ambient color shift)
+  const getMoodPageBg = (mood: string): React.CSSProperties => {
+    const map: Record<string, React.CSSProperties> = {
+      '🌸': { background: 'linear-gradient(135deg, #fdf6f9 0%, #fce7f3 40%, #faf7f2 100%)' }, // sakura → dreamy pink
+      '☀️': { background: 'linear-gradient(135deg, #fffdf0 0%, #fef9c3 40%, #faf7f2 100%)' }, // sunny → warm gold
+      '☁️': { background: 'linear-gradient(135deg, #f4f6f9 0%, #e2e8f0 40%, #faf7f2 100%)' }, // cloudy → cool mist
+      '🍂': { background: 'linear-gradient(135deg, #fffbeb 0%, #fde68a 30%, #faf7f2 100%)' }, // autumn → amber glow
+      '🎀': { background: 'linear-gradient(135deg, #faf5ff 0%, #ede9fe 40%, #faf7f2 100%)' }, // ribbon → soft purple
+      '🧸': { background: 'linear-gradient(135deg, #fff7ed 0%, #fed7aa 30%, #faf7f2 100%)' }, // teddy → warm honey
+    };
+    return map[mood] || { background: 'linear-gradient(135deg, #faf7f2 0%, #faf7f2 100%)' };
+  };
+
+  // Mood → notebook paper tint color (subtle border + background)
+  const getMoodPaperBorder = (mood: string): string => {
+    const map: Record<string, string> = {
+      '🌸': 'rgba(249, 168, 212, 0.35)', // pink
+      '☀️': 'rgba(253, 224, 71, 0.35)',  // yellow
+      '☁️': 'rgba(148, 163, 184, 0.35)', // slate
+      '🍂': 'rgba(252, 211, 77, 0.35)',  // amber
+      '🎀': 'rgba(196, 181, 254, 0.35)', // purple
+      '🧸': 'rgba(253, 186, 116, 0.35)', // orange
+    };
+    return map[mood] || 'rgba(245, 225, 226, 0.2)';
+  };
+
   // Register PWA Service Worker & Initial Live Clock
   useEffect(() => {
     // 1. PWA Service worker installation
@@ -668,7 +694,13 @@ export default function Workspace() {
   const mapEntries = allEntries.filter(e => e.latitude !== null && e.longitude !== null);
 
   return (
-    <div className="min-h-screen bg-canvas flex flex-col font-sans relative">
+    <div
+      className="min-h-screen flex flex-col font-sans relative"
+      style={{
+        ...getMoodPageBg(selectedMood),
+        transition: 'background 0.8s ease',
+      }}
+    >
       
       {/* Module D: Biometric Lock Screen Overlay */}
       <AnimatePresence>
@@ -963,7 +995,13 @@ export default function Workspace() {
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   onClick={() => setActiveStickerId(null)}
-                  className="flex-1 bg-white rounded-3xl shadow-xl shadow-espresso/[0.02] border border-blush/20 p-6 flex flex-col relative min-h-[500px] overflow-hidden"
+                  className="flex-1 bg-white rounded-3xl shadow-xl shadow-espresso/[0.02] p-6 flex flex-col relative min-h-[500px] overflow-hidden"
+                  style={{
+                    borderWidth: '1.5px',
+                    borderStyle: 'solid',
+                    borderColor: getMoodPaperBorder(selectedMood),
+                    transition: 'border-color 0.8s ease',
+                  }}
                 >
                   {/* Module B: Draggable Sticker Layer Container with Rotation, Scale, and delete modifiers */}
                   <div className="absolute inset-0 pointer-events-none z-10">
