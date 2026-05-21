@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { encryptData, decryptData } from '../lib/cryptoUtils';
 import AmbientPlayer from './AmbientPlayer';
 import ImageUploader from './ImageUploader';
+import GoogleMapPicker from './GoogleMapPicker';
 import { 
   BookOpen, 
   Smile, 
@@ -120,17 +121,17 @@ export default function Workspace() {
   // Cute stickers list for selection
   const stickerOptions = ['🧸', '🎀', '🌸', '✨', '☕', '📖', '🐈', '🍮', '🍓', '🍰', '🥐', '🧁', '⭐', '🎈', '🎨', '🍀'];
 
-  // Mood → calendar background color mapping (Phase 4 roadmap)
-  const getMoodCalendarStyle = (mood: string): string => {
-    const map: Record<string, string> = {
-      '🌸': 'bg-pink-100/70 border-pink-200',      // sakura → soft pink
-      '☀️': 'bg-yellow-100/70 border-yellow-200',   // sunny → warm yellow
-      '☁️': 'bg-slate-100/70 border-slate-200',     // cloudy → cool grey
-      '🍂': 'bg-amber-100/70 border-amber-200',     // autumn → amber/orange
-      '🎀': 'bg-purple-100/70 border-purple-200',   // ribbon → soft lavender
-      '🧸': 'bg-orange-100/70 border-orange-200',   // teddy → warm brown-tan
+  // Mood → inline style mapping for calendar cells (Tailwind v4 can't resolve dynamic class strings)
+  const getMoodCalendarInlineStyle = (mood: string): React.CSSProperties => {
+    const map: Record<string, React.CSSProperties> = {
+      '🌸': { backgroundColor: 'rgba(252, 231, 243, 0.85)', borderColor: 'rgba(249, 168, 212, 0.7)' }, // sakura → pink
+      '☀️': { backgroundColor: 'rgba(254, 249, 195, 0.85)', borderColor: 'rgba(253, 224, 71, 0.7)' },  // sunny → yellow
+      '☁️': { backgroundColor: 'rgba(241, 245, 249, 0.85)', borderColor: 'rgba(203, 213, 225, 0.7)' }, // cloudy → slate
+      '🍂': { backgroundColor: 'rgba(254, 243, 199, 0.85)', borderColor: 'rgba(252, 211, 77, 0.7)' },  // autumn → amber
+      '🎀': { backgroundColor: 'rgba(243, 232, 255, 0.85)', borderColor: 'rgba(216, 180, 254, 0.7)' }, // ribbon → purple
+      '🧸': { backgroundColor: 'rgba(255, 237, 213, 0.85)', borderColor: 'rgba(253, 186, 116, 0.7)' }, // teddy → orange
     };
-    return map[mood] || 'bg-lavender/20 border-lavender/30';
+    return map[mood] || { backgroundColor: 'rgba(226, 217, 243, 0.5)', borderColor: 'rgba(196, 181, 253, 0.5)' };
   };
 
   // Register PWA Service Worker & Initial Live Clock
@@ -408,14 +409,22 @@ export default function Workspace() {
       const entryDateStr = formatDateString(selectedDate);
       let entryId = loadedEntryId;
 
-      const payload = {
+      // Base payload — always required fields only
+      const basePayload: Record<string, any> = {
         title: title.trim() || 'Untitled Memory',
         content: encryptedContent,
         mood_emoji: selectedMood,
-        location_name: isAttachingLocation ? locationName.trim() : null,
-        latitude: isAttachingLocation ? locationLat : null,
-        longitude: isAttachingLocation ? locationLng : null,
       };
+
+      // Only add location fields if user has explicitly pinned a location
+      // (Prevents schema error if location columns haven't been migrated yet)
+      if (isAttachingLocation && locationName.trim()) {
+        basePayload.location_name = locationName.trim();
+        basePayload.latitude = locationLat;
+        basePayload.longitude = locationLng;
+      }
+
+      const payload = basePayload;
 
       if (loadedEntryId) {
         // 1. UPDATE existing entry
@@ -865,22 +874,28 @@ export default function Workspace() {
                     const isSelected = formatDateString(date) === formatDateString(selectedDate);
                     const isToday = formatDateString(date) === formatDateString(new Date());
                     const moodMarker = hasMemoryOnDate(date);
-                    const moodColorClass = moodMarker ? getMoodCalendarStyle(moodMarker) : '';
+                    
+                    // Build inline style for mood-colored cells (Tailwind v4 dynamic class fix)
+                    const moodStyle: React.CSSProperties =
+                      isCurrentMonth && moodMarker && !isSelected && !isToday
+                        ? getMoodCalendarInlineStyle(moodMarker)
+                        : {};
                     
                     return (
                       <button
                         key={idx}
                         onClick={() => setSelectedDate(date)}
                         disabled={!isCurrentMonth}
+                        style={moodStyle}
                         className={`relative aspect-square rounded-xl flex flex-col items-center justify-center text-xs font-medium transition-all active:scale-90 border ${
                           !isCurrentMonth 
                             ? 'opacity-20 cursor-default border-transparent' 
                             : isSelected 
                               ? 'bg-espresso text-canvas scale-105 shadow-md shadow-espresso/10 border-espresso'
-                              : moodMarker && !isToday
-                                ? `${moodColorClass} text-espresso/90 hover:scale-105`
-                                : isToday
-                                  ? 'bg-lavender/30 text-espresso border-lavender/50'
+                              : isToday
+                                ? 'bg-lavender/30 text-espresso border-lavender/50'
+                                : moodMarker
+                                  ? 'text-espresso/90 hover:scale-105'
                                   : 'hover:bg-canvas text-espresso/80 border-transparent'
                         }`}
                       >
@@ -1103,68 +1118,39 @@ export default function Workspace() {
                     />
                   </div>
 
-                  {/* Module C: Location Pinning Section */}
-                  <div className="mt-2 pl-6 z-10 space-y-1">
-                    <button
-                      onClick={() => setIsAttachingLocation(!isAttachingLocation)}
-                      className={`text-[10px] flex items-center gap-1 font-bold tracking-wide uppercase py-1 px-2.5 rounded-lg border transition-all cursor-pointer ${
-                        isAttachingLocation 
-                          ? 'bg-lavender/30 border-lavender text-espresso' 
-                          : 'bg-white hover:bg-canvas border-blush/20 text-espresso/60'
-                      }`}
-                    >
-                      <MapPin className="w-3 h-3 text-blush" />
-                      <span>{isAttachingLocation ? 'Location Attached' : 'Attach Cozy Location'}</span>
-                    </button>
-
-                    <AnimatePresence>
-                      {isAttachingLocation && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          className="bg-canvas/50 border border-blush/10 rounded-2xl p-3 flex flex-col gap-2 overflow-hidden shadow-inner"
+                  {/* Google Maps Location Picker */}
+                  <div className="mt-2 pl-6 z-10">
+                    <GoogleMapPicker
+                      apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY || ''}
+                      initialLat={isAttachingLocation ? locationLat : undefined}
+                      initialLng={isAttachingLocation ? locationLng : undefined}
+                      initialPlaceName={locationName}
+                      onLocationPicked={(lat, lng, placeName) => {
+                        setLocationLat(lat);
+                        setLocationLng(lng);
+                        setLocationName(placeName);
+                        setIsAttachingLocation(true);
+                      }}
+                    />
+                    {isAttachingLocation && locationName && (
+                      <div className="mt-1.5 flex items-center gap-1.5">
+                        <span className="text-[9px] text-espresso/50 bg-canvas/70 border border-blush/10 rounded-lg px-2 py-0.5 flex items-center gap-1 font-mono">
+                          <MapPin className="w-2.5 h-2.5 text-blush" />
+                          {locationLat.toFixed(4)}, {locationLng.toFixed(4)}
+                        </span>
+                        <button
+                          onClick={() => {
+                            setIsAttachingLocation(false);
+                            setLocationName('');
+                            setLocationLat(50);
+                            setLocationLng(50);
+                          }}
+                          className="text-[9px] text-rose-400 hover:text-rose-600 transition-colors cursor-pointer font-semibold"
                         >
-                          <input 
-                            type="text" 
-                            placeholder="Cafe Name, City (e.g. Paris Cafe)" 
-                            value={locationName}
-                            onChange={(e) => setLocationName(e.target.value)}
-                            className="w-full text-xs font-semibold text-espresso bg-white border border-blush/20 rounded-xl px-2.5 py-1.5 focus:outline-none placeholder:text-espresso/20 shadow-sm"
-                          />
-                          <div className="flex gap-4 items-center pt-1 text-[9px] text-espresso/60 font-semibold px-1">
-                            <div className="flex-1 space-y-1">
-                              <span className="flex justify-between">
-                                <span>Lat Coordinate:</span>
-                                <span className="font-mono text-espresso">{locationLat.toFixed(1)}°</span>
-                              </span>
-                              <input 
-                                type="range" 
-                                min="5" 
-                                max="95" 
-                                value={locationLat} 
-                                onChange={(e) => setLocationLat(Number(e.target.value))} 
-                                className="w-full h-1 bg-white border border-blush/20 rounded-lg appearance-none cursor-pointer"
-                              />
-                            </div>
-                            <div className="flex-1 space-y-1">
-                              <span className="flex justify-between">
-                                <span>Lng Coordinate:</span>
-                                <span className="font-mono text-espresso">{locationLng.toFixed(1)}°</span>
-                              </span>
-                              <input 
-                                type="range" 
-                                min="5" 
-                                max="95" 
-                                value={locationLng} 
-                                onChange={(e) => setLocationLng(Number(e.target.value))} 
-                                className="w-full h-1 bg-white border border-blush/20 rounded-lg appearance-none cursor-pointer"
-                              />
-                            </div>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                          Remove
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Quick Canvas Actions Footer */}
