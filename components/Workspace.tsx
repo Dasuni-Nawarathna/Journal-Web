@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 import { encryptData, decryptData } from '../lib/cryptoUtils';
+import AmbientPlayer from './AmbientPlayer';
+import ImageUploader from './ImageUploader';
 import { 
   BookOpen, 
   Smile, 
@@ -117,6 +119,19 @@ export default function Workspace() {
   
   // Cute stickers list for selection
   const stickerOptions = ['🧸', '🎀', '🌸', '✨', '☕', '📖', '🐈', '🍮', '🍓', '🍰', '🥐', '🧁', '⭐', '🎈', '🎨', '🍀'];
+
+  // Mood → calendar background color mapping (Phase 4 roadmap)
+  const getMoodCalendarStyle = (mood: string): string => {
+    const map: Record<string, string> = {
+      '🌸': 'bg-pink-100/70 border-pink-200',      // sakura → soft pink
+      '☀️': 'bg-yellow-100/70 border-yellow-200',   // sunny → warm yellow
+      '☁️': 'bg-slate-100/70 border-slate-200',     // cloudy → cool grey
+      '🍂': 'bg-amber-100/70 border-amber-200',     // autumn → amber/orange
+      '🎀': 'bg-purple-100/70 border-purple-200',   // ribbon → soft lavender
+      '🧸': 'bg-orange-100/70 border-orange-200',   // teddy → warm brown-tan
+    };
+    return map[mood] || 'bg-lavender/20 border-lavender/30';
+  };
 
   // Register PWA Service Worker & Initial Live Clock
   useEffect(() => {
@@ -755,7 +770,20 @@ export default function Workspace() {
           </div>
         )}
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          {/* Ambient Sound Player */}
+          <AmbientPlayer />
+
+          {/* Image Uploader — shown when a user is logged in */}
+          {userId && (
+            <ImageUploader
+              userId={userId}
+              entryId={loadedEntryId}
+            />
+          )}
+
+          <span className="text-espresso/20">|</span>
+
           {userEmail && (
             <button 
               onClick={handleOpenProfile}
@@ -837,26 +865,29 @@ export default function Workspace() {
                     const isSelected = formatDateString(date) === formatDateString(selectedDate);
                     const isToday = formatDateString(date) === formatDateString(new Date());
                     const moodMarker = hasMemoryOnDate(date);
+                    const moodColorClass = moodMarker ? getMoodCalendarStyle(moodMarker) : '';
                     
                     return (
                       <button
                         key={idx}
                         onClick={() => setSelectedDate(date)}
                         disabled={!isCurrentMonth}
-                        className={`relative aspect-square rounded-xl flex flex-col items-center justify-center text-xs font-medium transition-all active:scale-90 ${
+                        className={`relative aspect-square rounded-xl flex flex-col items-center justify-center text-xs font-medium transition-all active:scale-90 border ${
                           !isCurrentMonth 
-                            ? 'opacity-20 cursor-default' 
+                            ? 'opacity-20 cursor-default border-transparent' 
                             : isSelected 
-                              ? 'bg-espresso text-canvas scale-105 shadow-md shadow-espresso/10'
-                              : isToday
-                                ? 'bg-lavender/30 text-espresso border border-lavender/50'
-                                : 'hover:bg-canvas text-espresso/80'
+                              ? 'bg-espresso text-canvas scale-105 shadow-md shadow-espresso/10 border-espresso'
+                              : moodMarker && !isToday
+                                ? `${moodColorClass} text-espresso/90 hover:scale-105`
+                                : isToday
+                                  ? 'bg-lavender/30 text-espresso border-lavender/50'
+                                  : 'hover:bg-canvas text-espresso/80 border-transparent'
                         }`}
                       >
                         <span>{date.getDate()}</span>
-                        {/* Visual marker of memory presence */}
+                        {/* Mood emoji dot on days with memories */}
                         {moodMarker && isCurrentMonth && (
-                          <span className="absolute bottom-1 text-[9px] leading-none select-none">
+                          <span className="absolute bottom-0.5 text-[8px] leading-none select-none">
                             {isSelected ? '✨' : moodMarker}
                           </span>
                         )}
