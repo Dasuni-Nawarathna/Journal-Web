@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabaseClient';
-import { ImageIcon, Upload, X, Loader2, Check } from 'lucide-react';
+import { ImageIcon, Upload, X, Loader2, Check, AlertCircle } from 'lucide-react';
 
 interface UploadedImage {
   url: string;
@@ -33,7 +33,7 @@ export default function ImageUploader({ userId, entryId, onImageUploaded }: Imag
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      setStatus({ type: 'error', text: 'Only image files are allowed.' });
+      setStatus({ type: 'error', text: 'Only image files are allowed (PNG, JPG, WEBP).' });
       return;
     }
 
@@ -47,38 +47,65 @@ export default function ImageUploader({ userId, entryId, onImageUploaded }: Imag
     setStatus(null);
 
     try {
-      // Create a unique file path using userId + timestamp
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${userId}/${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
+      // Verify the user session is still active
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setStatus({ type: 'error', text: 'Session expired. Please sign in again.' });
+        setIsUploading(false);
+        return;
+      }
 
-      // Upload to Supabase Storage bucket "memory-images"
-      const { data, error } = await supabase.storage
+      // Build a clean file name — flat path inside bucket (no folder nesting)
+      // This avoids RLS folder-matching issues with storage.foldername()
+      const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const timestamp = Date.now();
+      const rand = Math.random().toString(36).substring(2, 6);
+      // Flat path: uid_timestamp_random.ext — no subfolder
+      const filePath = `${userId}_${timestamp}_${rand}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
         .from('memory-images')
-        .upload(fileName, file, {
+        .upload(filePath, file, {
+          contentType: file.type,
           cacheControl: '3600',
           upsert: false,
         });
 
-      if (error) throw error;
+      if (uploadError) {
+        // Surface Supabase's exact error message for easy debugging
+        console.error('Supabase Storage upload error:', uploadError);
+        
+        if (uploadError.message.includes('Bucket not found')) {
+          setStatus({ type: 'error', text: '🪣 Bucket "memory-images" not found. Create it in Supabase → Storage.' });
+        } else if (uploadError.message.includes('row-level security') || uploadError.message.includes('policy') || uploadError.message.includes('violates')) {
+          setStatus({ type: 'error', text: '🔒 Permission denied. Run the storage policy SQL in Supabase → SQL Editor.' });
+        } else if (uploadError.message.includes('Duplicate')) {
+          setStatus({ type: 'error', text: 'A file with this name already exists. Please rename and try again.' });
+        } else {
+          setStatus({ type: 'error', text: `Upload error: ${uploadError.message}` });
+        }
+        return;
+      }
 
       // Get the public URL
       const { data: { publicUrl } } = supabase.storage
         .from('memory-images')
-        .getPublicUrl(fileName);
+        .getPublicUrl(filePath);
 
       const newImage: UploadedImage = {
         url: publicUrl,
-        path: fileName,
+        path: filePath,
         name: file.name,
       };
 
       setUploadedImages((prev) => [...prev, newImage]);
-      setStatus({ type: 'success', text: '✨ Image uploaded!' });
+      setStatus({ type: 'success', text: '✨ Photo added to your memory!' });
       onImageUploaded?.(newImage);
 
-      setTimeout(() => setStatus(null), 2500);
+      setTimeout(() => setStatus(null), 3000);
     } catch (err: any) {
-      setStatus({ type: 'error', text: err.message || 'Upload failed. Please try again.' });
+      console.error('Unexpected upload error:', err);
+      setStatus({ type: 'error', text: err.message || 'Unexpected error. Check browser console for details.' });
     } finally {
       setIsUploading(false);
     }
@@ -87,7 +114,7 @@ export default function ImageUploader({ userId, entryId, onImageUploaded }: Imag
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) handleFileUpload(file);
-    // Reset input so same file can be selected again
+    // Reset input so same file can be re-selected
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -100,10 +127,12 @@ export default function ImageUploader({ userId, entryId, onImageUploaded }: Imag
 
   const handleDeleteImage = async (image: UploadedImage) => {
     try {
-      await supabase.storage.from('memory-images').remove([image.path]);
+      const { error } = await supabase.storage.from('memory-images').remove([image.path]);
+      if (error) throw error;
       setUploadedImages((prev) => prev.filter((img) => img.path !== image.path));
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error deleting image:', err);
+      setStatus({ type: 'error', text: `Delete failed: ${err.message}` });
     }
   };
 
@@ -120,7 +149,11 @@ export default function ImageUploader({ userId, entryId, onImageUploaded }: Imag
         title="Attach photos to this memory"
       >
         <ImageIcon className="w-3 h-3" />
-        <span>{uploadedImages.length > 0 ? `${uploadedImages.length} Photo${uploadedImages.length > 1 ? 's' : ''}` : 'Add Photo'}</span>
+        <span>
+          {uploadedImages.length > 0
+            ? `${uploadedImages.length} Photo${uploadedImages.length > 1 ? 's' : ''}`
+            : 'Add Photo'}
+        </span>
       </button>
 
       {/* Floating uploader panel */}
@@ -133,13 +166,14 @@ export default function ImageUploader({ userId, entryId, onImageUploaded }: Imag
             transition={{ type: 'spring', damping: 20, stiffness: 300 }}
             className="absolute top-9 left-0 w-72 bg-white/95 backdrop-blur-md border border-blush/25 rounded-2xl shadow-xl p-4 space-y-3 z-50"
           >
+            {/* Header */}
             <div className="text-[10px] font-bold uppercase tracking-wider text-espresso/60 flex items-center gap-1.5 justify-between">
               <div className="flex items-center gap-1.5">
                 <ImageIcon className="w-3 h-3 text-blush" />
                 <span>Memory Photos</span>
               </div>
               <button
-                onClick={() => setIsOpen(false)}
+                onClick={() => { setIsOpen(false); setStatus(null); }}
                 className="p-0.5 rounded text-espresso/30 hover:text-espresso transition-colors cursor-pointer"
               >
                 <X className="w-3 h-3" />
@@ -151,17 +185,19 @@ export default function ImageUploader({ userId, entryId, onImageUploaded }: Imag
               onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
               onDragLeave={() => setIsDragging(false)}
               onDrop={handleDrop}
-              onClick={() => fileInputRef.current?.click()}
-              className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all space-y-2 ${
-                isDragging
-                  ? 'border-lavender bg-lavender/20'
-                  : 'border-blush/30 hover:border-lavender hover:bg-lavender/10'
+              onClick={() => !isUploading && fileInputRef.current?.click()}
+              className={`border-2 border-dashed rounded-2xl p-5 text-center transition-all space-y-2 ${
+                isUploading
+                  ? 'opacity-60 cursor-not-allowed border-blush/20'
+                  : isDragging
+                    ? 'border-lavender bg-lavender/20 cursor-copy'
+                    : 'border-blush/30 hover:border-lavender hover:bg-lavender/10 cursor-pointer'
               }`}
             >
               {isUploading ? (
                 <div className="flex flex-col items-center gap-2">
                   <Loader2 className="w-6 h-6 text-lavender animate-spin" />
-                  <span className="text-[10px] text-espresso/60">Uploading...</span>
+                  <span className="text-[10px] text-espresso/60">Uploading to Supabase...</span>
                 </div>
               ) : (
                 <>
@@ -178,7 +214,7 @@ export default function ImageUploader({ userId, entryId, onImageUploaded }: Imag
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept="image/png,image/jpeg,image/webp,image/gif"
               onChange={handleFileInputChange}
               className="hidden"
             />
@@ -190,12 +226,18 @@ export default function ImageUploader({ userId, entryId, onImageUploaded }: Imag
                   initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
-                  className={`text-[10px] px-3 py-1.5 rounded-xl font-medium flex items-center gap-1.5 ${
-                    status.type === 'success' ? 'bg-sage/40 text-espresso' : 'bg-blush/50 text-espresso'
+                  className={`text-[10px] px-3 py-2 rounded-xl font-medium flex items-start gap-1.5 leading-relaxed ${
+                    status.type === 'success'
+                      ? 'bg-sage/40 text-espresso'
+                      : 'bg-rose-50 text-rose-700 border border-rose-100'
                   }`}
                 >
-                  {status.type === 'success' ? <Check className="w-3 h-3 text-emerald-600" /> : null}
-                  {status.text}
+                  {status.type === 'success' ? (
+                    <Check className="w-3 h-3 text-emerald-600 flex-shrink-0 mt-0.5" />
+                  ) : (
+                    <AlertCircle className="w-3 h-3 text-rose-500 flex-shrink-0 mt-0.5" />
+                  )}
+                  <span>{status.text}</span>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -203,20 +245,25 @@ export default function ImageUploader({ userId, entryId, onImageUploaded }: Imag
             {/* Uploaded image thumbnails */}
             {uploadedImages.length > 0 && (
               <div className="space-y-1.5">
-                <p className="text-[9px] text-espresso/40 font-bold uppercase tracking-wider">Attached</p>
+                <p className="text-[9px] text-espresso/40 font-bold uppercase tracking-wider">
+                  Attached ({uploadedImages.length})
+                </p>
                 <div className="grid grid-cols-3 gap-1.5">
                   {uploadedImages.map((img) => (
-                    <div key={img.path} className="relative group aspect-square rounded-xl overflow-hidden border border-blush/20 shadow-sm">
+                    <div
+                      key={img.path}
+                      className="relative group aspect-square rounded-xl overflow-hidden border border-blush/20 shadow-sm"
+                    >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={img.url}
                         alt={img.name}
                         className="w-full h-full object-cover"
                       />
-                      {/* Delete overlay */}
                       <button
                         onClick={(e) => { e.stopPropagation(); handleDeleteImage(img); }}
-                        className="absolute inset-0 bg-espresso/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer"
+                        className="absolute inset-0 bg-espresso/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer"
+                        title="Remove photo"
                       >
                         <X className="w-4 h-4 text-white" />
                       </button>
@@ -226,10 +273,11 @@ export default function ImageUploader({ userId, entryId, onImageUploaded }: Imag
               </div>
             )}
 
-            {/* Setup hint */}
-            <p className="text-[9px] text-espresso/30 leading-relaxed border-t border-canvas pt-2">
-              💡 Requires a Supabase Storage bucket named <code className="font-mono bg-canvas px-0.5 rounded">memory-images</code> with public access enabled.
-            </p>
+            {/* Quick setup reminder */}
+            <div className="text-[9px] text-espresso/30 leading-relaxed border-t border-canvas pt-2 space-y-0.5">
+              <p>💡 Requires bucket <code className="font-mono bg-canvas px-0.5 rounded">memory-images</code> in Supabase Storage.</p>
+              <p>🔓 Enable <strong>public access</strong> and disable RLS on the bucket, or add INSERT policy for authenticated users.</p>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
