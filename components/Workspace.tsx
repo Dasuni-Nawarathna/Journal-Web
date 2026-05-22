@@ -118,8 +118,29 @@ export default function Workspace() {
 
   const moods = ['🌸', '☀️', '☁️', '🍂', '🎀', '🧸'];
   
-  // Cute stickers list for selection
-  const stickerOptions = ['🧸', '🎀', '🌸', '✨', '☕', '📖', '🐈', '🍮', '🍓', '🍰', '🥐', '🧁', '⭐', '🎈', '🎨', '🍀'];
+  // Image-based aesthetic sticker set (3 sheets × 4 stickers each = 12 total)
+  // Each entry: id used as the sticker "emoji" field, src = sheet path, pos = crop position
+  const stickerOptions: { id: string; label: string; src: string; pos: string }[] = [
+    // Sheet 1: Camera, Bow, Daisy, Evil Eye
+    { id: 'stk_camera',   label: 'Camera',   src: '/stickers/set1.png', pos: '0% 0%' },
+    { id: 'stk_bow',      label: 'Bow',      src: '/stickers/set1.png', pos: '100% 0%' },
+    { id: 'stk_daisy',    label: 'Daisy',    src: '/stickers/set1.png', pos: '0% 100%' },
+    { id: 'stk_evileye',  label: 'Evil Eye', src: '/stickers/set1.png', pos: '100% 100%' },
+    // Sheet 2: Coffee, Flamingo, Heart, Smiley
+    { id: 'stk_coffee',   label: 'Coffee',   src: '/stickers/set2.png', pos: '0% 0%' },
+    { id: 'stk_flamingo', label: 'Flamingo', src: '/stickers/set2.png', pos: '100% 0%' },
+    { id: 'stk_heart',    label: 'Heart',    src: '/stickers/set2.png', pos: '0% 100%' },
+    { id: 'stk_smiley',   label: 'Smiley',   src: '/stickers/set2.png', pos: '100% 100%' },
+    // Sheet 3: Panda, Books, Butterfly, Lavender
+    { id: 'stk_panda',    label: 'Panda',    src: '/stickers/set3.png', pos: '0% 0%' },
+    { id: 'stk_books',    label: 'Books',    src: '/stickers/set3.png', pos: '100% 0%' },
+    { id: 'stk_butterfly',label: 'Butterfly',src: '/stickers/set3.png', pos: '0% 100%' },
+    { id: 'stk_lavender', label: 'Lavender', src: '/stickers/set3.png', pos: '100% 100%' },
+  ];
+
+  // Helper: get sticker image props from its id
+  const getStickerImage = (id: string) =>
+    stickerOptions.find((s) => s.id === id);
 
   // Mood → inline style mapping for calendar cells (Tailwind v4 can't resolve dynamic class strings)
   const getMoodCalendarInlineStyle = (mood: string): React.CSSProperties => {
@@ -1040,7 +1061,25 @@ export default function Workspace() {
                             className={`transition-shadow ${isActive ? 'ring-2 ring-lavender/60 ring-offset-2 rounded-xl p-1 bg-white/30 backdrop-blur-[1px] shadow-lg' : ''}`}
                             title="Drag to place! Single-click to modify, Double-click to delete."
                           >
-                            {sticker.emoji}
+                            {/* Render image sticker or fallback to emoji */}
+                            {(() => {
+                              const img = getStickerImage(sticker.emoji);
+                              return img ? (
+                                <div
+                                  style={{
+                                    width: '56px',
+                                    height: '56px',
+                                    backgroundImage: `url(${img.src})`,
+                                    backgroundSize: '200% 200%',
+                                    backgroundPosition: img.pos,
+                                    backgroundRepeat: 'no-repeat',
+                                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))',
+                                  }}
+                                />
+                              ) : (
+                                <span style={{ fontSize: '1.8rem' }}>{sticker.emoji}</span>
+                              );
+                            })()}
                             
                             {/* Draggable Rotation / Scale / Delete Modifiers capsule overlay */}
                             {isActive && (
@@ -1253,14 +1292,24 @@ export default function Workspace() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-4 gap-2.5 pt-1">
-                  {stickerOptions.map((emoji) => (
+                <div className="grid grid-cols-4 gap-2 pt-1">
+                  {stickerOptions.map((sticker) => (
                     <button
-                      key={emoji}
-                      onClick={() => handleAddSticker(emoji)}
-                      className="text-2xl p-1.5 rounded-xl hover:bg-canvas transition-all active:scale-90 cursor-pointer hover:rotate-6 flex items-center justify-center"
+                      key={sticker.id}
+                      onClick={() => handleAddSticker(sticker.id)}
+                      title={sticker.label}
+                      className="aspect-square rounded-xl hover:bg-canvas transition-all active:scale-90 cursor-pointer hover:rotate-3 flex items-center justify-center overflow-hidden border border-blush/10 hover:border-lavender hover:shadow-sm"
                     >
-                      {emoji}
+                      <div
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          backgroundImage: `url(${sticker.src})`,
+                          backgroundSize: '200% 200%',
+                          backgroundPosition: sticker.pos,
+                          backgroundRepeat: 'no-repeat',
+                        }}
+                      />
                     </button>
                   ))}
                 </div>
