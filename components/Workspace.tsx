@@ -1003,8 +1003,9 @@ export default function Workspace() {
                     transition: 'border-color 0.8s ease',
                   }}
                 >
-                  {/* Module B: Draggable Sticker Layer Container with Rotation, Scale, and delete modifiers */}
-                  <div className="absolute inset-0 pointer-events-none z-10">
+                  {/* Module B: Draggable Sticker Layer — z-30 puts it ABOVE the content wrapper (z-10)
+                      The overlay itself is pointer-events-none; stickers inside use pointer-events:auto */}
+                  <div className="absolute inset-0 pointer-events-none z-30">
                     <AnimatePresence>
                       {stickers.map((sticker) => {
                         const isActive = activeStickerId === sticker.id;
@@ -1098,8 +1099,8 @@ export default function Workspace() {
                     ))}
                   </div>
 
-                  {/* Notebook Content Workspace — z-20 ensures this sits above the sticker overlay (z-10) */}
-                  <div className="pl-6 flex-1 flex flex-col space-y-4 relative z-20">
+                  {/* Notebook Content Workspace — z-10 sits below the sticker layer (z-30) */}
+                  <div className="pl-6 flex-1 flex flex-col space-y-4 relative z-10">
                     
                     {/* Selected date tag */}
                     <div className="flex items-center justify-between border-b border-canvas pb-3">
@@ -1150,8 +1151,7 @@ export default function Workspace() {
                       style={{
                         backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px)',
                         backgroundSize: '100% 2rem',
-                        caretColor: '#2D2A26',
-                        pointerEvents: 'auto',
+                        caretColor: '#000000',   // pure black — visible on all mood backgrounds
                       }}
                     />
                   </div>

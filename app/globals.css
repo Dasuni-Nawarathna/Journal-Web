@@ -22,21 +22,34 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Force visible caret and cursor on all text inputs */
+/* ── Cursor & caret: pure black, always visible ── */
+/* NOTE: Do NOT set z-index here — it breaks sticker drag events.
+   The caret renders inside the textarea regardless of stacking order.
+   The sticker overlay is pointer-events-none + transparent, so the caret
+   is always visually visible through it. */
 textarea,
-input[type="text"] {
-  caret-color: #2D2A26 !important;
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+input {
+  caret-color: #000000 !important;   /* solid black — always visible on any bg */
   cursor: text !important;
   -webkit-user-select: text !important;
   user-select: text !important;
-  position: relative;
-  z-index: 25;
 }
 
 textarea:focus,
-input[type="text"]:focus {
-  caret-color: #2D2A26 !important;
+input:focus {
+  caret-color: #000000 !important;
   outline: none;
+}
+
+/* Global fallback: black caret on any contenteditable */
+[contenteditable],
+[contenteditable="true"] {
+  caret-color: #000000 !important;
+  cursor: text !important;
 }
 
 /* Text selection highlight styling */
