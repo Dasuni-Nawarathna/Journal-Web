@@ -794,27 +794,27 @@ export default function Workspace() {
       </AnimatePresence>
 
       {/* Top Quiet Navigation Bar */}
-      <nav className="px-6 py-4 flex items-center justify-between border-b border-blush/20 bg-white/40 backdrop-blur-md z-20 shadow-sm">
+      <nav className="px-6 py-4 flex items-center justify-between border-b border-blush/35 bg-white/45 backdrop-blur-md z-20 shadow-sm">
         <div className="flex items-center gap-4 text-espresso">
           <div className="flex items-center gap-2">
             <Heart className="w-4 h-4 text-blush fill-blush animate-pulse" />
-            <span className="font-semibold tracking-wider text-xs uppercase">My Safe Space</span>
+            <span className="font-bold tracking-wider text-xs uppercase text-espresso">My Safe Space</span>
           </div>
 
-          <span className="text-espresso/20">|</span>
+          <span className="text-espresso/45">|</span>
 
           {/* Toggle View button: Editor vs Cozy Map */}
-          <div className="flex bg-canvas/60 rounded-full p-0.5 border border-blush/10 text-[10px] font-bold">
+          <div className="flex bg-canvas border border-blush/35 text-[10px] font-bold rounded-full p-0.5 shadow-inner">
             <button
               onClick={() => setActiveView('editor')}
-              className={`px-3 py-1 rounded-full flex items-center gap-1.5 transition-all cursor-pointer ${activeView === 'editor' ? 'bg-espresso text-canvas shadow-sm' : 'text-espresso/60 hover:text-espresso'}`}
+              className={`px-3 py-1 rounded-full flex items-center gap-1.5 transition-all cursor-pointer ${activeView === 'editor' ? 'bg-espresso text-canvas shadow-sm' : 'text-espresso/80 font-bold hover:text-espresso'}`}
             >
               <BookIcon className="w-3 h-3" />
               <span>Notebook</span>
             </button>
             <button
               onClick={() => setActiveView('map')}
-              className={`px-3 py-1 rounded-full flex items-center gap-1.5 transition-all cursor-pointer ${activeView === 'map' ? 'bg-espresso text-canvas shadow-sm' : 'text-espresso/60 hover:text-espresso'}`}
+              className={`px-3 py-1 rounded-full flex items-center gap-1.5 transition-all cursor-pointer ${activeView === 'map' ? 'bg-espresso text-canvas shadow-sm' : 'text-espresso/80 font-bold hover:text-espresso'}`}
             >
               <Globe className="w-3 h-3 animate-spin-slow" />
               <span>Memory Map</span>
@@ -824,11 +824,11 @@ export default function Workspace() {
         
         {/* Live Clock Display */}
         {timeString && (
-          <div className="hidden md:flex items-center gap-2 px-4 py-1.5 bg-white/50 backdrop-blur-sm rounded-full border border-blush/10 text-espresso/80 text-xs shadow-inner">
+          <div className="hidden md:flex items-center gap-2 px-4 py-1.5 bg-white border border-blush/30 text-espresso text-xs shadow-inner rounded-full">
             <Clock className="w-3.5 h-3.5 text-lavender animate-spin-slow" />
             <span className="font-semibold font-mono">{timeString}</span>
-            <span className="text-[10px] text-espresso/40">•</span>
-            <span className="font-medium text-espresso/60">{dateString}</span>
+            <span className="text-[10px] text-espresso/60">•</span>
+            <span className="font-semibold text-espresso/85">{dateString}</span>
           </div>
         )}
 
@@ -844,20 +844,20 @@ export default function Workspace() {
             />
           )}
 
-          <span className="text-espresso/20">|</span>
+          <span className="text-espresso/45">|</span>
 
           {userEmail && (
             <button 
               onClick={handleOpenProfile}
-              className="flex items-center gap-1.5 text-xs text-espresso/70 bg-white/60 hover:bg-white/90 px-3 py-1 rounded-full border border-blush/10 transition-all hover:scale-105 active:scale-95 cursor-pointer font-medium"
+              className="flex items-center gap-1.5 text-xs text-espresso bg-white hover:bg-white px-3 py-1 rounded-full border border-blush/35 transition-all hover:scale-105 active:scale-95 cursor-pointer font-bold shadow-sm"
             >
-              <User className="w-3 h-3 text-lavender" />
+              <User className="w-3 h-3 text-espresso/80 font-extrabold" />
               <span>{displayName}</span>
             </button>
           )}
           <button 
             onClick={handleSignOut}
-            className="flex items-center gap-1.5 text-xs text-espresso/60 hover:text-espresso transition-colors font-medium cursor-pointer"
+            className="flex items-center gap-1.5 text-xs text-espresso/85 hover:text-espresso transition-colors font-bold cursor-pointer"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span>Sign Out</span>
@@ -891,26 +891,26 @@ export default function Workspace() {
               )}
 
               {/* Interactive Custom Calendar Panel */}
-              <div className="bg-white/60 backdrop-blur-md p-5 rounded-3xl border border-blush/15 shadow-sm space-y-4">
+              <div className="bg-white/70 backdrop-blur-md p-5 rounded-3xl border border-blush/35 shadow-sm space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-espresso/80 flex items-center gap-1.5">
-                    <CalendarIcon className="w-4 h-4 text-lavender" />
+                  <span className="text-xs font-bold uppercase tracking-wider text-espresso flex items-center gap-1.5">
+                    <CalendarIcon className="w-4 h-4 text-lavender font-bold" />
                     <span>Select Entry Date</span>
                   </span>
                   
                   <div className="flex items-center gap-1">
                     <button 
                       onClick={prevMonth}
-                      className="p-1 rounded-lg hover:bg-canvas text-espresso/55 hover:text-espresso transition-all"
+                      className="p-1 rounded-lg hover:bg-canvas text-espresso/80 font-bold hover:text-espresso transition-all"
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
-                    <span className="text-xs font-semibold text-espresso min-w-[70px] text-center font-mono">
+                    <span className="text-xs font-bold text-espresso min-w-[70px] text-center font-mono">
                       {currentMonth.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
                     </span>
                     <button 
                       onClick={nextMonth}
-                      className="p-1 rounded-lg hover:bg-canvas text-espresso/55 hover:text-espresso transition-all"
+                      className="p-1 rounded-lg hover:bg-canvas text-espresso/80 font-bold hover:text-espresso transition-all"
                     >
                       <ChevronRight className="w-4 h-4" />
                     </button>
@@ -920,7 +920,7 @@ export default function Workspace() {
                 {/* Calendar Grid */}
                 <div className="grid grid-cols-7 gap-1 text-center">
                   {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
-                    <div key={d} className="text-[10px] font-bold text-espresso/40 py-1">{d}</div>
+                    <div key={d} className="text-[10px] font-extrabold text-espresso/75 py-1">{d}</div>
                   ))}
                   
                   {calendarDays.map(({ date, isCurrentMonth }, idx) => {
@@ -940,16 +940,16 @@ export default function Workspace() {
                         onClick={() => setSelectedDate(date)}
                         disabled={!isCurrentMonth}
                         style={moodStyle}
-                        className={`relative aspect-square rounded-xl flex flex-col items-center justify-center text-xs font-medium transition-all active:scale-90 border ${
+                        className={`relative aspect-square rounded-xl flex flex-col items-center justify-center text-xs font-semibold transition-all active:scale-90 border ${
                           !isCurrentMonth 
-                            ? 'opacity-20 cursor-default border-transparent' 
+                            ? 'opacity-45 font-medium cursor-default border-transparent' 
                             : isSelected 
-                              ? 'bg-espresso text-canvas scale-105 shadow-md shadow-espresso/10 border-espresso'
+                              ? 'bg-espresso text-canvas scale-105 shadow-md shadow-espresso/10 border-espresso font-bold'
                               : isToday
-                                ? 'bg-lavender/30 text-espresso border-lavender/50'
+                                ? 'bg-lavender/55 text-espresso font-bold border-lavender/70 shadow-sm'
                                 : moodMarker
-                                  ? 'text-espresso/90 hover:scale-105'
-                                  : 'hover:bg-canvas text-espresso/80 border-transparent'
+                                  ? 'text-espresso font-bold hover:scale-105'
+                                  : 'hover:bg-canvas text-espresso/95 font-semibold border-transparent'
                         }`}
                       >
                         <span>{date.getDate()}</span>
@@ -964,9 +964,9 @@ export default function Workspace() {
                   })}
                 </div>
 
-                <div className="pt-2 border-t border-canvas flex justify-between items-center text-[10px] text-espresso/50 px-1">
+                <div className="pt-2 border-t border-canvas/80 flex justify-between items-center text-[10px] text-espresso/75 font-semibold px-1">
                   <span className="flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 bg-lavender rounded-full" /> Today
+                    <span className="w-1.5 h-1.5 bg-lavender/90 border border-lavender/40 rounded-full shadow-sm" /> Today
                   </span>
                   <span className="flex items-center gap-1">
                     <span>🌸/☀️</span> Memory Written
@@ -975,14 +975,14 @@ export default function Workspace() {
               </div>
 
               {/* User Written Statistics */}
-              <div className="bg-gradient-to-tr from-blush/30 via-lavender/20 to-sage/20 p-4 rounded-3xl border border-blush/10 space-y-2.5">
+              <div className="bg-gradient-to-tr from-blush/40 via-lavender/30 to-sage/30 p-4 rounded-3xl border border-blush/30 shadow-sm space-y-2.5">
                 <div className="flex items-center justify-between text-espresso">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-espresso/60">Writing Statistics</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-espresso/85">Writing Statistics</span>
                   <Heart className="w-3.5 h-3.5 text-blush fill-blush animate-pulse" />
                 </div>
                 <div className="flex justify-between items-baseline">
                   <span className="text-2xl font-bold text-espresso">{entryCount}</span>
-                  <span className="text-[10px] text-espresso/50">total thoughts secured</span>
+                  <span className="text-[10px] text-espresso/80 font-semibold">total thoughts secured</span>
                 </div>
               </div>
             </div>
@@ -1141,17 +1141,18 @@ export default function Workspace() {
                   {/* Notebook Content Workspace — z-10 sits below the sticker layer (z-30) */}
                   <div className="pl-6 flex-1 flex flex-col space-y-4 relative z-10">
                     
+
                     {/* Selected date tag */}
                     <div className="flex items-center justify-between border-b border-canvas pb-3">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-espresso/40">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-espresso/75">
                         Selected page: {selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                       </span>
                       {loadedEntryId ? (
-                        <span className="text-[9px] bg-sage/55 text-espresso font-semibold uppercase px-2 py-0.5 rounded-full">
+                        <span className="text-[9px] bg-sage/65 border border-sage text-espresso font-bold uppercase px-2 py-0.5 rounded-full shadow-sm">
                           Saved Memory
                         </span>
                       ) : (
-                        <span className="text-[9px] bg-canvas text-espresso/50 font-semibold uppercase px-2 py-0.5 rounded-full">
+                        <span className="text-[9px] bg-canvas border border-blush/45 text-espresso/80 font-bold uppercase px-2 py-0.5 rounded-full shadow-sm">
                           New Blank Page
                         </span>
                       )}
@@ -1162,12 +1163,12 @@ export default function Workspace() {
                       placeholder="Give this memory a name..." 
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
-                      className="w-full text-xl font-semibold text-espresso bg-transparent focus:outline-none placeholder:text-espresso/20 cursor-text"
+                      className="w-full text-xl font-bold text-espresso bg-transparent focus:outline-none placeholder:text-espresso/50 cursor-text"
                       style={{ caretColor: '#2D2A26' }}
                     />
                     
-                    <div className="flex flex-wrap gap-2 items-center text-[10px] text-espresso/60 pb-3 border-b border-canvas">
-                      <span>Vibe today:</span>
+                    <div className="flex flex-wrap gap-2 items-center text-[10px] text-espresso/80 pb-3 border-b border-canvas">
+                      <span className="font-semibold text-espresso/85">Vibe today:</span>
                       <div className="flex gap-1">
                         {moods.map((m) => (
                           <button 
@@ -1186,9 +1187,9 @@ export default function Workspace() {
                       placeholder="Pour your thoughts onto the page here..."
                       value={journalText}
                       onChange={(e) => setJournalText(e.target.value)}
-                      className="w-full flex-1 bg-transparent resize-none focus:outline-none text-espresso/80 text-sm leading-8 tracking-wide placeholder:text-espresso/30 cursor-text select-text"
+                      className="w-full flex-1 bg-transparent resize-none focus:outline-none text-espresso text-sm font-medium leading-8 tracking-wide placeholder:text-espresso/55 cursor-text select-text"
                       style={{
-                        backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px)',
+                        backgroundImage: 'linear-gradient(rgba(45, 42, 38, 0.09) 1px, transparent 1px)',
                         backgroundSize: '100% 2rem',
                         caretColor: '#000000',   // pure black — visible on all mood backgrounds
                       }}
@@ -1211,7 +1212,7 @@ export default function Workspace() {
                     />
                     {isAttachingLocation && locationName && (
                       <div className="mt-1.5 flex items-center gap-1.5">
-                        <span className="text-[9px] text-espresso/50 bg-canvas/70 border border-blush/10 rounded-lg px-2 py-0.5 flex items-center gap-1 font-mono">
+                        <span className="text-[9px] text-espresso bg-canvas border border-blush/35 rounded-lg px-2 py-0.5 flex items-center gap-1 font-mono font-semibold shadow-sm">
                           <MapPin className="w-2.5 h-2.5 text-blush" />
                           {locationLat.toFixed(4)}, {locationLng.toFixed(4)}
                         </span>
@@ -1222,7 +1223,7 @@ export default function Workspace() {
                             setLocationLat(50);
                             setLocationLng(50);
                           }}
-                          className="text-[9px] text-rose-400 hover:text-rose-600 transition-colors cursor-pointer font-semibold"
+                          className="text-[9px] text-rose-500 hover:text-rose-700 transition-colors cursor-pointer font-bold"
                         >
                           Remove
                         </button>
@@ -1263,42 +1264,41 @@ export default function Workspace() {
 
             {/* Right Column: Past Memories & Scrapbook Sticker Drawer (3 Cols) */}
             <div className="lg:col-span-3 space-y-4 flex flex-col">
-              
               {/* Draggable Sticker Kit Drawer */}
-              <div className="bg-white/60 backdrop-blur-md p-4 rounded-3xl border border-blush/10 shadow-sm space-y-3">
-                <div className="text-xs font-semibold uppercase tracking-wider text-espresso/80 flex items-center gap-1.5 pb-2 border-b border-canvas">
-                  <Smile className="w-4 h-4 text-lavender animate-bounce" />
+              <div className='bg-white/60 backdrop-blur-md p-4 rounded-3xl border border-blush/25 shadow-sm space-y-3'>
+                <div className='text-xs font-bold uppercase tracking-wider text-espresso flex items-center gap-1.5 pb-2 border-b border-canvas'>
+                  <Smile className='w-4 h-4 text-lavender animate-bounce' />
                   <span>Scrapbook Sticker Drawer</span>
                 </div>
-                <p className="text-[10px] text-espresso/50 leading-relaxed">
+                <p className='text-[10px] text-espresso/80 leading-relaxed font-semibold'>
                   Click a sticker to place it, then drag it anywhere! Click to select and click (✕) to delete.
                 </p>
                 
                 {/* Draggable controls (Undo / Clear) */}
-                <div className="flex gap-2 pt-0.5 pb-2 border-b border-canvas/40">
+                <div className='flex gap-2 pt-0.5 pb-2 border-b border-canvas/40'>
                   <button
                     onClick={handleUndoSticker}
                     disabled={stickers.length === 0}
-                    className="flex-1 text-[10px] py-1 bg-lavender/30 hover:bg-lavender/50 text-espresso font-semibold rounded-lg transition-all active:scale-95 disabled:opacity-40 cursor-pointer text-center font-medium"
+                    className='flex-1 text-[10px] py-1.5 bg-lavender hover:bg-lavender/80 text-espresso font-extrabold border border-lavender/40 shadow-sm rounded-lg transition-all active:scale-95 disabled:opacity-40 cursor-pointer text-center'
                   >
                     ⏪ Undo last
                   </button>
                   <button
                     onClick={handleClearStickers}
                     disabled={stickers.length === 0}
-                    className="flex-1 text-[10px] py-1 bg-rose-50 hover:bg-rose-100 text-rose-500 font-semibold rounded-lg transition-all active:scale-95 disabled:opacity-40 cursor-pointer text-center font-medium"
+                    className='flex-1 text-[10px] py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-700 font-extrabold border border-rose-350 shadow-sm rounded-lg transition-all active:scale-95 disabled:opacity-40 cursor-pointer text-center'
                   >
                     🗑️ Clear all
                   </button>
                 </div>
 
-                <div className="grid grid-cols-4 gap-2 pt-1">
+                <div className='grid grid-cols-4 gap-2 pt-1'>
                   {stickerOptions.map((sticker) => (
                     <button
                       key={sticker.id}
                       onClick={() => handleAddSticker(sticker.id)}
                       title={sticker.label}
-                      className="aspect-square rounded-xl hover:bg-canvas transition-all active:scale-90 cursor-pointer hover:rotate-3 flex items-center justify-center overflow-hidden border border-blush/10 hover:border-lavender hover:shadow-sm"
+                      className='aspect-square rounded-xl hover:bg-canvas transition-all active:scale-90 cursor-pointer hover:rotate-3 flex items-center justify-center overflow-hidden border border-blush/20 hover:border-lavender hover:shadow-sm'
                     >
                       <div
                         style={{
@@ -1316,19 +1316,19 @@ export default function Workspace() {
               </div>
 
               {/* Past Memories list with Module A local decryption preview loops */}
-              <div className="bg-white/50 backdrop-blur-sm p-4 rounded-3xl border border-blush/10 flex flex-col flex-1 h-[270px]">
-                <div className="text-xs font-semibold uppercase tracking-wider text-espresso/80 flex items-center gap-1.5 pb-3 border-b border-canvas">
-                  <BookOpen className="w-4 h-4 text-sage" />
+              <div className='bg-white/50 backdrop-blur-sm p-4 rounded-3xl border border-blush/20 flex flex-col flex-1 h-[270px]'>
+                <div className='text-xs font-bold uppercase tracking-wider text-espresso flex items-center gap-1.5 pb-3 border-b border-canvas'>
+                  <BookOpen className='w-4 h-4 text-sage' />
                   <span>Memories Logs</span>
                 </div>
                 
                 {/* Scrollable list of past journal items */}
-                <div className="flex-1 overflow-y-auto mt-3 pr-1 space-y-2 scrollbar-thin">
+                <div className='flex-1 overflow-y-auto mt-3 pr-1 space-y-2 scrollbar-thin'>
                   {allEntries.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center text-center p-6 text-espresso/40 h-full">
-                      <FileText className="w-8 h-8 text-espresso/20 mb-2" />
-                      <p className="text-xs font-medium">No pages written yet.</p>
-                      <p className="text-[10px] mt-1">Select a date on the calendar and save a page.</p>
+                    <div className='flex flex-col items-center justify-center text-center p-6 text-espresso/70 h-full'>
+                      <FileText className='w-8 h-8 text-espresso/45 mb-2' />
+                      <p className='text-xs font-bold text-espresso'>No pages written yet.</p>
+                      <p className='text-[10px] mt-1 font-semibold text-espresso/80'>Select a date on the calendar and save a page.</p>
                     </div>
                   ) : (
                     allEntries.map((e) => {
@@ -1347,32 +1347,32 @@ export default function Workspace() {
                           }}
                           className={`p-3 rounded-2xl border text-left cursor-pointer transition-all hover:scale-[1.02] active:scale-98 shadow-sm flex flex-col gap-1 ${
                             isSelected 
-                              ? 'bg-espresso text-canvas border-espresso' 
-                              : 'bg-white/80 border-blush/10 hover:border-lavender'
+                              ? 'bg-espresso text-canvas border-espresso font-bold' 
+                              : 'bg-white border border-blush/20 hover:border-lavender hover:bg-canvas/50'
                           }`}
                         >
-                          <div className="flex items-center justify-between">
-                            <p className={`text-xs font-bold truncate max-w-[125px] ${isSelected ? 'text-canvas' : 'text-espresso/90'}`}>
+                          <div className='flex items-center justify-between'>
+                            <p className={`text-xs font-bold truncate max-w-[125px] ${isSelected ? 'text-canvas font-bold' : 'text-espresso'}`}>
                               {e.title || 'Untitled Memory'}
                             </p>
-                            <span className="text-xs leading-none">{e.mood_emoji || '🌸'}</span>
+                            <span className='text-xs leading-none'>{e.mood_emoji || '🌸'}</span>
                           </div>
                           
-                          {/* Beautiful decrypted snippet loop */}
+                          {/* Beautiful decrypted snippet preview */}
                           {clearSnippet && (
-                            <p className={`text-[10px] leading-relaxed line-clamp-2 ${isSelected ? 'text-canvas/75' : 'text-espresso/60'}`}>
+                            <p className={`text-[10px] leading-relaxed line-clamp-2 ${isSelected ? 'text-canvas/75' : 'text-espresso/80 font-medium'}`}>
                               {clearSnippet}
                             </p>
                           )}
 
-                          <div className="flex items-center justify-between mt-1 pt-1 border-t border-canvas/10">
-                            <span className={`text-[9px] font-mono ${isSelected ? 'text-canvas/60' : 'text-espresso/40'}`}>
+                          <div className='flex items-center justify-between mt-1 pt-1 border-t border-canvas/10'>
+                            <span className={`text-[9px] font-mono font-semibold ${isSelected ? 'text-canvas/75' : 'text-espresso/70'}`}>
                               {entryDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                             </span>
                             {e.location_name && (
-                              <span className={`text-[9px] flex items-center gap-0.5 font-semibold ${isSelected ? 'text-blush' : 'text-espresso/50'}`}>
-                                <MapPin className="w-2.5 h-2.5" />
-                                <span className="truncate max-w-[70px]">{e.location_name}</span>
+                              <span className={`text-[9px] flex items-center gap-0.5 font-bold ${isSelected ? 'text-blush' : 'text-espresso/75'}`}>
+                                <MapPin className='w-2.5 h-2.5' />
+                                <span className='truncate max-w-[70px]'>{e.location_name}</span>
                               </span>
                             )}
                           </div>
@@ -1381,7 +1381,6 @@ export default function Workspace() {
                     })
                   )}
                 </div>
-
               </div>
             </div>
 
@@ -1404,7 +1403,7 @@ export default function Workspace() {
                     <Compass className="w-5 h-5 text-blush animate-spin-slow" />
                     <span>My Cozy Memory Map</span>
                   </h2>
-                  <p className="text-[11px] text-espresso/55">
+                  <p className="text-[11px] text-espresso/75 font-semibold">
                     Navigate through geographically plotted memories. Hover a pin to preview, click to open.
                   </p>
                 </div>
@@ -1412,7 +1411,7 @@ export default function Workspace() {
                 <div className="flex gap-2">
                   <div className="text-right hidden sm:block">
                     <p className="text-xs font-bold text-espresso">{mapEntries.length} Pins Plotted</p>
-                    <p className="text-[9px] text-espresso/40">out of {entryCount} total thoughts</p>
+                    <p className="text-[9px] text-espresso/65 font-bold">out of {entryCount} total thoughts</p>
                   </div>
                 </div>
               </div>

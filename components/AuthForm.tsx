@@ -170,20 +170,20 @@ export default function AuthForm() {
   return (
     <div className="flex min-h-screen bg-canvas items-center justify-center p-4">
       {/* Digital Open Notebook Card */}
-      <div className="w-full max-w-4xl bg-white/70 backdrop-blur-md rounded-3xl shadow-[0_15px_40px_rgba(45,42,38,0.1)] border border-blush/30 overflow-hidden grid md:grid-cols-2 min-h-[580px] relative">
+      <div className="w-full max-w-4xl bg-white/70 backdrop-blur-md rounded-3xl shadow-[0_15px_40px_rgba(45,42,38,0.12)] border border-blush/35 overflow-hidden grid md:grid-cols-2 min-h-[580px] relative">
         
         {/* ─── Spiral Binder Spine ─── */}
         <div className="absolute left-1/2 top-0 bottom-0 w-8 -ml-4 z-20 flex flex-col justify-around py-10 pointer-events-none hidden md:flex">
           {[...Array(9)].map((_, i) => (
             <div key={i} className="relative flex items-center justify-between w-full h-4">
               {/* Left hole */}
-              <div className="w-1.5 h-3 bg-espresso/25 rounded-full ml-1.5 shadow-inner" />
+              <div className="w-1.5 h-3 bg-espresso/35 rounded-full ml-1.5 shadow-inner" />
               {/* Silver ring body */}
               <div className="absolute left-[20%] right-[20%] h-3.5 bg-gradient-to-b from-stone-400 via-stone-200 to-stone-500 rounded-full border border-stone-600/30 shadow-[0_2px_4px_rgba(0,0,0,0.15)] flex items-center justify-center">
                 <div className="w-full h-0.5 bg-white/40 absolute top-0.5 rounded-full" />
               </div>
               {/* Right hole */}
-              <div className="w-1.5 h-3 bg-espresso/25 rounded-full mr-1.5 shadow-inner" />
+              <div className="w-1.5 h-3 bg-espresso/35 rounded-full mr-1.5 shadow-inner" />
             </div>
           ))}
         </div>
@@ -191,9 +191,9 @@ export default function AuthForm() {
         {/* ─── Left Page: Cozy Scrapbook Cover ─── */}
         <div 
           ref={coverRef}
-          className="relative bg-gradient-to-tr from-blush/55 via-lavender/35 to-sage/35 p-8 flex flex-col justify-between overflow-hidden border-r border-espresso/5 select-none"
+          className="relative bg-gradient-to-tr from-blush/55 via-lavender/35 to-sage/35 p-8 flex flex-col justify-between overflow-hidden border-r border-espresso/10 select-none"
           style={{
-            backgroundImage: 'radial-gradient(circle, rgba(45, 42, 38, 0.04) 1.5px, transparent 1.5px)',
+            backgroundImage: 'radial-gradient(circle, rgba(45, 42, 38, 0.05) 1.5px, transparent 1.5px)',
             backgroundSize: '20px 20px',
           }}
         >
@@ -201,20 +201,20 @@ export default function AuthForm() {
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-lavender/30 rounded-full blur-3xl pointer-events-none" />
 
           {/* Logo Title */}
-          <div className="flex items-center gap-2 text-espresso/80 z-10">
+          <div className="flex items-center gap-2 text-espresso z-10">
             <Heart className="w-5 h-5 text-blush fill-blush animate-pulse" />
-            <span className="font-semibold tracking-wide text-xs uppercase">Memory Space</span>
+            <span className="font-bold tracking-wider text-xs uppercase text-espresso">Memory Space</span>
           </div>
 
           {/* Cozy Polaroid Frame with Mockup */}
           <div className="relative mx-auto my-auto py-4 z-10 flex flex-col items-center">
             {/* Washi Tape */}
-            <div className="absolute -top-1.5 w-24 h-5.5 bg-lavender/40 backdrop-blur-[1px] border border-white/20 rotate-[-3deg] shadow-sm z-20" />
+            <div className="absolute -top-1.5 w-24 h-5.5 bg-lavender/50 backdrop-blur-[1px] border border-white/30 rotate-[-3deg] shadow-sm z-20" />
             
             {/* Polaroid container */}
             <motion.div 
               whileHover={{ rotate: 1, scale: 1.02 }}
-              className="bg-white p-3 pb-7 shadow-lg border border-espresso/5 rotate-[-2deg] transition-all duration-300 w-52 relative"
+              className="bg-white p-3 pb-7 shadow-lg border border-espresso/10 rotate-[-2deg] transition-all duration-300 w-52 relative"
             >
               <div className="aspect-square relative overflow-hidden rounded-sm bg-canvas border border-espresso/5">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -225,7 +225,7 @@ export default function AuthForm() {
                 />
               </div>
               <div className="mt-3 text-center">
-                <span className="font-serif italic text-espresso/60 text-xs tracking-wide">
+                <span className="font-serif italic text-espresso font-semibold text-xs tracking-wide">
                   my sanctuary 📖
                 </span>
               </div>
@@ -268,7 +268,7 @@ export default function AuthForm() {
                         backgroundSize: '200% 200%',
                         backgroundPosition: img.pos,
                         backgroundRepeat: 'no-repeat',
-                        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.12))',
+                        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))',
                       }}
                     />
                   ) : (
@@ -279,7 +279,7 @@ export default function AuthForm() {
             })}
           </div>
 
-          <div className="text-[10px] text-espresso/50 flex items-center gap-1 z-10">
+          <div className="text-[10px] text-espresso/75 font-semibold flex items-center gap-1.5 z-10">
             <Sparkles className="w-3.5 h-3.5 text-lavender" />
             <span>Interactive sandbox. Drag stickers to decorate!</span>
           </div>
@@ -289,12 +289,12 @@ export default function AuthForm() {
         <div 
           className="p-8 flex flex-col justify-center bg-[#FAF7F2] relative"
           style={{
-            backgroundImage: 'linear-gradient(rgba(45, 42, 38, 0.035) 1px, transparent 1px)',
+            backgroundImage: 'linear-gradient(rgba(45, 42, 38, 0.045) 1px, transparent 1px)',
             backgroundSize: '100% 28px',
           }}
         >
           {/* Mini Ambient sound player */}
-          <div className="absolute top-4 right-4 z-30 flex items-center gap-1 bg-white/70 backdrop-blur-md border border-blush/20 rounded-full px-2.5 py-1 text-espresso/60 shadow-sm text-[9px] font-semibold">
+          <div className="absolute top-4 right-4 z-30 flex items-center gap-1.5 bg-white border border-blush/45 rounded-full px-2.5 py-1 text-espresso shadow-md text-[9px] font-bold">
             <Music className="w-3 h-3 text-lavender animate-pulse" />
             <span>Sounds:</span>
             <button
@@ -303,7 +303,7 @@ export default function AuthForm() {
               className={`px-1.5 py-0.5 rounded-full transition-all cursor-pointer ${
                 loginSound === 'rain'
                   ? 'bg-espresso text-canvas font-bold'
-                  : 'hover:bg-canvas text-espresso/70'
+                  : 'hover:bg-canvas text-espresso/90 font-semibold'
               }`}
             >
               🌧️ Rain
@@ -314,7 +314,7 @@ export default function AuthForm() {
               className={`px-1.5 py-0.5 rounded-full transition-all cursor-pointer ${
                 loginSound === 'cafe'
                   ? 'bg-espresso text-canvas font-bold'
-                  : 'hover:bg-canvas text-espresso/70'
+                  : 'hover:bg-canvas text-espresso/90 font-semibold'
               }`}
             >
               ☕ Café
@@ -333,10 +333,10 @@ export default function AuthForm() {
 
           <form onSubmit={handleAuth} className="space-y-5 z-10">
             <div className="space-y-1">
-              <h2 className="text-xl font-semibold text-espresso tracking-tight">
+              <h2 className="text-xl font-bold text-espresso tracking-tight">
                 {isSignUp ? 'Begin your diary journey' : 'Welcome Back'}
               </h2>
-              <p className="text-xs text-espresso/60 font-medium">
+              <p className="text-xs text-espresso/75 font-semibold">
                 {isSignUp ? 'Create a calm refuge for your daily moments' : 'Please log in to your peaceful workspace'}
               </p>
             </div>
@@ -347,8 +347,8 @@ export default function AuthForm() {
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  className={`p-3 rounded-xl text-xs font-semibold ${
-                    message.type === 'success' ? 'bg-sage/40 text-espresso' : 'bg-blush/50 text-espresso'
+                  className={`p-3 rounded-xl text-xs font-bold ${
+                    message.type === 'success' ? 'bg-sage/40 text-espresso' : 'bg-blush/55 text-espresso'
                   }`}
                 >
                   {message.text}
@@ -366,14 +366,14 @@ export default function AuthForm() {
                     exit={{ opacity: 0, height: 0 }}
                     className="relative overflow-hidden"
                   >
-                    <User className="absolute left-3 top-3.5 h-4 w-4 text-espresso/40" />
+                    <User className="absolute left-3 top-3.5 h-4 w-4 text-espresso/65" />
                     <input
                       type="text"
                       placeholder="Display Name"
                       required
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 bg-canvas/60 border border-blush/20 rounded-xl text-sm focus:outline-none focus:border-lavender text-espresso transition-all placeholder:text-espresso/30"
+                      className="w-full pl-10 pr-4 py-3 bg-canvas/90 border border-blush/40 rounded-xl text-sm focus:outline-none focus:border-espresso/40 text-espresso transition-all placeholder:text-espresso/50 font-medium shadow-inner"
                     />
                   </motion.div>
                 )}
@@ -381,32 +381,32 @@ export default function AuthForm() {
 
               {/* Email Input */}
               <div className="relative">
-                <Mail className="absolute left-3 top-3.5 h-4 w-4 text-espresso/40" />
+                <Mail className="absolute left-3 top-3.5 h-4 w-4 text-espresso/65" />
                 <input
                   type="email"
                   placeholder="Your Email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-canvas/60 border border-blush/20 rounded-xl text-sm focus:outline-none focus:border-lavender text-espresso transition-all placeholder:text-espresso/30"
+                  className="w-full pl-10 pr-4 py-3 bg-canvas/90 border border-blush/40 rounded-xl text-sm focus:outline-none focus:border-espresso/40 text-espresso transition-all placeholder:text-espresso/50 font-medium shadow-inner"
                 />
               </div>
 
               {/* Password Input */}
               <div className="relative">
-                <Lock className="absolute left-3 top-3.5 h-4 w-4 text-espresso/40" />
+                <Lock className="absolute left-3 top-3.5 h-4 w-4 text-espresso/65" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-10 py-3 bg-canvas/60 border border-blush/20 rounded-xl text-sm focus:outline-none focus:border-lavender text-espresso transition-all placeholder:text-espresso/30"
+                  className="w-full pl-10 pr-10 py-3 bg-canvas/90 border border-blush/40 rounded-xl text-sm focus:outline-none focus:border-espresso/40 text-espresso transition-all placeholder:text-espresso/50 font-medium shadow-inner"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-3.5 text-espresso/40 hover:text-espresso/70 transition-colors cursor-pointer"
+                  className="absolute right-3 top-3.5 text-espresso/60 hover:text-espresso transition-colors cursor-pointer"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -415,14 +415,14 @@ export default function AuthForm() {
               {/* Password Strength (Only on Sign Up) */}
               {isSignUp && password && (
                 <div className="space-y-1 py-1">
-                  <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-wider text-espresso/50">
+                  <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-wider text-espresso/60">
                     <span>Password Strength</span>
                     <span className={
-                      strength.score === 1 ? 'text-rose-500' :
-                      strength.score === 2 ? 'text-amber-500' : 'text-emerald-500'
+                      strength.score === 1 ? 'text-rose-600' :
+                      strength.score === 2 ? 'text-amber-600' : 'text-emerald-600'
                     }>{strength.label}</span>
                   </div>
-                  <div className="h-1 w-full bg-canvas border border-blush/20 rounded-full overflow-hidden">
+                  <div className="h-1.5 w-full bg-canvas border border-blush/30 rounded-full overflow-hidden">
                     <div 
                       className={`h-full ${strength.color} transition-all duration-300`} 
                       style={{ width: `${(strength.score / 3) * 100}%` }}
@@ -434,12 +434,12 @@ export default function AuthForm() {
 
             {/* Remember Me & Forgot Password panel */}
             <div className="flex items-center justify-between text-xs py-1">
-              <label className="flex items-center gap-1.5 text-espresso/60 hover:text-espresso cursor-pointer select-none">
+              <label className="flex items-center gap-1.5 text-espresso/80 hover:text-espresso cursor-pointer select-none font-semibold">
                 <input
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="rounded border-blush/30 bg-canvas text-lavender focus:ring-lavender focus:ring-offset-0"
+                  className="rounded border-blush/50 bg-white text-espresso focus:ring-espresso focus:ring-offset-0 w-3.5 h-3.5"
                 />
                 <span>Remember me</span>
               </label>
@@ -449,7 +449,7 @@ export default function AuthForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-espresso text-canvas rounded-xl font-semibold text-sm transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-50 cursor-pointer shadow-md"
+              className="w-full py-3 bg-espresso text-canvas rounded-xl font-bold text-sm transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-50 cursor-pointer shadow-md"
             >
               {loading ? 'Processing...' : isSignUp ? 'Create Safe Havens' : 'Enter Safe Space'}
             </button>
@@ -462,7 +462,7 @@ export default function AuthForm() {
                   setIsSignUp(!isSignUp);
                   setMessage(null);
                 }}
-                className="text-xs text-espresso/60 hover:text-espresso font-medium underline transition-colors cursor-pointer"
+                className="text-xs text-espresso/85 hover:text-espresso font-bold underline transition-colors cursor-pointer"
               >
                 {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
               </button>

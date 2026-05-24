@@ -210,12 +210,12 @@ export default function GoogleMapPicker({
       {/* Trigger button */}
       <button
         onClick={hasApiKey ? handleOpen : undefined}
-        className={`flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-full border transition-all cursor-pointer ${
+        className={`flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full border transition-all cursor-pointer ${
           pickedLatLng
-            ? 'bg-lavender/40 border-lavender text-espresso'
+            ? 'bg-lavender/40 border-lavender text-espresso shadow-sm'
             : hasApiKey
-              ? 'bg-white/60 border-blush/20 text-espresso/60 hover:bg-canvas hover:text-espresso'
-              : 'bg-canvas border-blush/10 text-espresso/30 cursor-not-allowed'
+              ? 'bg-white border border-blush/35 text-espresso/80 hover:bg-canvas/80 hover:text-espresso shadow-sm'
+              : 'bg-canvas border border-blush/25 text-espresso/60 font-semibold cursor-not-allowed'
         }`}
         title={hasApiKey ? 'Pin a location on Google Maps' : 'Add NEXT_PUBLIC_GOOGLE_MAPS_KEY to .env.local'}
       >
@@ -224,7 +224,7 @@ export default function GoogleMapPicker({
       </button>
 
       {!hasApiKey && (
-        <p className="text-[9px] text-espresso/30 mt-0.5">Add Google Maps API key to .env.local</p>
+        <p className="text-[9px] text-espresso/70 font-semibold mt-0.5">Add Google Maps API key to .env.local</p>
       )}
 
       {/* Full-screen map modal */}
@@ -243,16 +243,16 @@ export default function GoogleMapPicker({
               <div className="flex items-center justify-between px-5 py-4 border-b border-canvas">
                 <div className="space-y-0.5">
                   <h2 className="text-sm font-semibold text-espresso flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-blush" />
+                    <MapPin className="w-4 h-4 text-blush animate-bounce" />
                     Pin Your Memory Location
                   </h2>
-                  <p className="text-[10px] text-espresso/50">
+                  <p className="text-[10px] text-espresso/75 font-semibold">
                     Click anywhere on the map or search to place your pin.
                   </p>
                 </div>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="p-1.5 rounded-xl hover:bg-canvas text-espresso/40 hover:text-espresso transition-all cursor-pointer"
+                  className="p-1.5 rounded-xl hover:bg-canvas text-espresso/60 hover:text-espresso transition-all cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -261,20 +261,20 @@ export default function GoogleMapPicker({
               {/* Search Bar */}
               <div className="px-5 py-3 border-b border-canvas flex gap-2">
                 <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-espresso/40" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-espresso/70" />
                   <input
                     type="text"
                     placeholder="Search for a place..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                    className="w-full pl-9 pr-3 py-2 bg-canvas/60 border border-blush/20 rounded-xl text-xs text-espresso focus:outline-none focus:border-lavender placeholder:text-espresso/30"
+                    className="w-full pl-9 pr-3 py-2 bg-canvas/60 border border-blush/20 rounded-xl text-xs text-espresso focus:outline-none focus:border-lavender placeholder:text-espresso/55 font-medium"
                   />
                 </div>
                 <button
                   onClick={handleSearch}
                   disabled={isSearching}
-                  className="px-3 py-2 bg-espresso text-canvas text-xs font-medium rounded-xl hover:opacity-90 active:scale-95 transition-all cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+                  className="px-3 py-2 bg-espresso text-canvas text-xs font-semibold rounded-xl hover:opacity-90 active:scale-95 transition-all cursor-pointer disabled:opacity-50 flex items-center gap-1.5 shadow-sm"
                 >
                   {isSearching ? <Loader2 className="w-3 h-3 animate-spin" /> : <Search className="w-3 h-3" />}
                   <span>Search</span>
@@ -286,16 +286,16 @@ export default function GoogleMapPicker({
                 {isLoadError ? (
                   <div className="absolute inset-0 flex items-center justify-center text-center p-6 space-y-2">
                     <div>
-                      <MapPin className="w-8 h-8 text-espresso/20 mx-auto mb-2" />
-                      <p className="text-xs font-semibold text-espresso/70">Google Maps failed to load.</p>
-                      <p className="text-[10px] text-espresso/45 mt-1">Check your API key and browser console.</p>
+                      <MapPin className="w-8 h-8 text-espresso/40 mx-auto mb-2" />
+                      <p className="text-xs font-bold text-espresso/90">Google Maps failed to load.</p>
+                      <p className="text-[10px] text-espresso/75 font-semibold mt-1">Check your API key and browser console.</p>
                     </div>
                   </div>
                 ) : !isLoaded ? (
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="flex flex-col items-center gap-3">
                       <Loader2 className="w-6 h-6 text-lavender animate-spin" />
-                      <p className="text-[10px] text-espresso/50">Loading map...</p>
+                      <p className="text-[10px] text-espresso/80 font-semibold">Loading map...</p>
                     </div>
                   </div>
                 ) : null}
@@ -309,16 +309,16 @@ export default function GoogleMapPicker({
                     <div className="space-y-0.5">
                       <div className="flex items-center gap-1.5">
                         <MapPin className="w-3 h-3 text-blush flex-shrink-0" />
-                        <span className="text-xs font-semibold text-espresso truncate">
+                        <span className="text-xs font-bold text-espresso truncate">
                           {isGeocoding ? 'Fetching location name...' : pickedPlaceName || 'Location selected'}
                         </span>
                       </div>
-                      <p className="text-[9px] text-espresso/40 font-mono pl-4">
+                      <p className="text-[9px] text-espresso/70 font-mono font-semibold pl-4">
                         {pickedLatLng.lat.toFixed(5)}, {pickedLatLng.lng.toFixed(5)}
                       </p>
                     </div>
                   ) : (
-                    <p className="text-[10px] text-espresso/40 italic">Click the map to drop a pin...</p>
+                    <p className="text-[10px] text-espresso/75 font-semibold italic">Click the map to drop a pin...</p>
                   )}
                 </div>
 

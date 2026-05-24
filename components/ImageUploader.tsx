@@ -141,14 +141,14 @@ export default function ImageUploader({ userId, entryId, onImageUploaded }: Imag
       {/* Trigger button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-full border transition-all cursor-pointer ${
+        className={`flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full border transition-all cursor-pointer ${
           uploadedImages.length > 0
-            ? 'bg-sage/30 border-sage text-espresso'
-            : 'bg-white/60 border-blush/20 text-espresso/60 hover:bg-canvas hover:text-espresso'
+            ? 'bg-sage/40 border-sage/75 text-espresso shadow-sm'
+            : 'bg-white border border-blush/35 text-espresso/80 hover:bg-canvas/80 hover:text-espresso shadow-sm'
         }`}
         title="Attach photos to this memory"
       >
-        <ImageIcon className="w-3 h-3" />
+        <ImageIcon className="w-3 h-3 text-lavender font-bold" />
         <span>
           {uploadedImages.length > 0
             ? `${uploadedImages.length} Photo${uploadedImages.length > 1 ? 's' : ''}`
@@ -164,17 +164,17 @@ export default function ImageUploader({ userId, entryId, onImageUploaded }: Imag
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.95 }}
             transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-            className="absolute top-9 left-0 w-72 bg-white/95 backdrop-blur-md border border-blush/25 rounded-2xl shadow-xl p-4 space-y-3 z-50"
+            className="absolute top-9 left-0 w-72 bg-white/95 backdrop-blur-md border border-blush/35 rounded-2xl shadow-xl p-4 space-y-3 z-50"
           >
             {/* Header */}
-            <div className="text-[10px] font-bold uppercase tracking-wider text-espresso/60 flex items-center gap-1.5 justify-between">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-espresso/85 flex items-center gap-1.5 justify-between">
               <div className="flex items-center gap-1.5">
-                <ImageIcon className="w-3 h-3 text-blush" />
+                <ImageIcon className="w-3 h-3 text-blush fill-blush animate-pulse" />
                 <span>Memory Photos</span>
               </div>
               <button
                 onClick={() => { setIsOpen(false); setStatus(null); }}
-                className="p-0.5 rounded text-espresso/30 hover:text-espresso transition-colors cursor-pointer"
+                className="p-0.5 rounded text-espresso/60 hover:text-espresso transition-colors cursor-pointer"
               >
                 <X className="w-3 h-3" />
               </button>
@@ -188,22 +188,22 @@ export default function ImageUploader({ userId, entryId, onImageUploaded }: Imag
               onClick={() => !isUploading && fileInputRef.current?.click()}
               className={`border-2 border-dashed rounded-2xl p-5 text-center transition-all space-y-2 ${
                 isUploading
-                  ? 'opacity-60 cursor-not-allowed border-blush/20'
+                  ? 'opacity-60 cursor-not-allowed border-blush/40'
                   : isDragging
                     ? 'border-lavender bg-lavender/20 cursor-copy'
-                    : 'border-blush/30 hover:border-lavender hover:bg-lavender/10 cursor-pointer'
+                    : 'border-blush/50 hover:border-lavender hover:bg-lavender/15 cursor-pointer'
               }`}
             >
               {isUploading ? (
                 <div className="flex flex-col items-center gap-2">
                   <Loader2 className="w-6 h-6 text-lavender animate-spin" />
-                  <span className="text-[10px] text-espresso/60">Uploading to Supabase...</span>
+                  <span className="text-[10px] text-espresso/80 font-bold">Uploading to Supabase...</span>
                 </div>
               ) : (
                 <>
-                  <Upload className="w-5 h-5 text-espresso/30 mx-auto" />
-                  <p className="text-[10px] text-espresso/50 leading-relaxed">
-                    <span className="font-semibold text-espresso/70">Click to browse</span> or drag & drop<br />
+                  <Upload className="w-5 h-5 text-espresso/60 mx-auto" />
+                  <p className="text-[10px] text-espresso/75 font-semibold leading-relaxed">
+                    <span className="font-bold text-espresso">Click to browse</span> or drag & drop<br />
                     PNG, JPG, WEBP • Max 5MB
                   </p>
                 </>
@@ -226,7 +226,7 @@ export default function ImageUploader({ userId, entryId, onImageUploaded }: Imag
                   initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
-                  className={`text-[10px] px-3 py-2 rounded-xl font-medium flex items-start gap-1.5 leading-relaxed ${
+                  className={`text-[10px] px-3 py-2 rounded-xl font-bold flex items-start gap-1.5 leading-relaxed ${
                     status.type === 'success'
                       ? 'bg-sage/40 text-espresso'
                       : 'bg-rose-50 text-rose-700 border border-rose-100'
@@ -245,7 +245,7 @@ export default function ImageUploader({ userId, entryId, onImageUploaded }: Imag
             {/* Uploaded image thumbnails */}
             {uploadedImages.length > 0 && (
               <div className="space-y-1.5">
-                <p className="text-[9px] text-espresso/40 font-bold uppercase tracking-wider">
+                <p className="text-[9px] text-espresso/70 font-bold uppercase tracking-wider">
                   Attached ({uploadedImages.length})
                 </p>
                 <div className="grid grid-cols-3 gap-1.5">
@@ -274,7 +274,7 @@ export default function ImageUploader({ userId, entryId, onImageUploaded }: Imag
             )}
 
             {/* Quick setup reminder */}
-            <div className="text-[9px] text-espresso/30 leading-relaxed border-t border-canvas pt-2 space-y-0.5">
+            <div className="text-[9px] text-espresso/60 leading-relaxed border-t border-canvas pt-2 space-y-0.5 font-semibold">
               <p>💡 Requires bucket <code className="font-mono bg-canvas px-0.5 rounded">memory-images</code> in Supabase Storage.</p>
               <p>🔓 Enable <strong>public access</strong> and disable RLS on the bucket, or add INSERT policy for authenticated users.</p>
             </div>

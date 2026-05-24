@@ -94,17 +94,17 @@ export default function AmbientPlayer() {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-full border transition-all cursor-pointer ${
+        className={`flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full border transition-all cursor-pointer ${
           activeId
-            ? 'bg-lavender/40 border-lavender text-espresso'
-            : 'bg-white/60 border-blush/20 text-espresso/60 hover:bg-canvas hover:text-espresso'
+            ? 'bg-lavender/40 border-lavender text-espresso shadow-sm'
+            : 'bg-white border border-blush/35 text-espresso/80 hover:bg-canvas/80 hover:text-espresso shadow-sm'
         }`}
         title="Ambient sound player"
       >
         {activeId ? (
           <><span className="animate-pulse">{activeTrack?.emoji}</span><span>{activeTrack?.label}</span></>
         ) : (
-          <><Music className="w-3 h-3" /><span>Ambient</span></>
+          <><Music className="w-3 h-3 text-lavender font-bold" /><span>Ambient</span></>
         )}
       </button>
 
@@ -115,9 +115,9 @@ export default function AmbientPlayer() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.95 }}
             transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-            className="absolute top-9 right-0 w-60 bg-white/96 backdrop-blur-md border border-blush/25 rounded-2xl shadow-xl p-4 space-y-3 z-50"
+            className="absolute top-9 right-0 w-60 bg-white/96 backdrop-blur-md border border-blush/35 rounded-2xl shadow-xl p-4 space-y-3 z-50"
           >
-            <div className="text-[10px] font-bold uppercase tracking-wider text-espresso/60 flex items-center gap-1.5">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-espresso/85 flex items-center gap-1.5">
               <Music className="w-3 h-3 text-lavender" />
               <span>Ambient Sounds</span>
             </div>
@@ -133,10 +133,10 @@ export default function AmbientPlayer() {
                     className={`flex flex-col items-start gap-0.5 text-left px-2.5 py-2 rounded-xl border transition-all cursor-pointer ${
                       isActive
                         ? 'bg-espresso text-canvas border-espresso shadow-sm'
-                        : 'bg-canvas/50 border-blush/15 text-espresso/70 hover:border-lavender hover:bg-lavender/15'
+                        : 'bg-canvas/50 border-blush/30 text-espresso/85 font-medium hover:border-lavender hover:bg-lavender/15'
                     }`}
                   >
-                    <div className="flex items-center gap-1 text-[11px] font-semibold w-full">
+                    <div className="flex items-center gap-1 text-[11px] font-bold w-full">
                       <span>{track.emoji}</span>
                       <span>{track.label}</span>
                       {isActive && (
@@ -151,7 +151,7 @@ export default function AmbientPlayer() {
                         </span>
                       )}
                     </div>
-                    <span className={`text-[9px] ${isActive ? 'text-canvas/50' : 'text-espresso/40'}`}>
+                    <span className={`text-[9px] font-medium ${isActive ? 'text-canvas/75' : 'text-espresso/65'}`}>
                       {track.description}
                     </span>
                   </button>
@@ -162,12 +162,12 @@ export default function AmbientPlayer() {
             {/* Volume */}
             <div className="space-y-1.5 pt-1 border-t border-canvas">
               <div className="flex items-center justify-between">
-                <span className="text-[9px] text-espresso/50 font-semibold uppercase tracking-wide">Volume</span>
+                <span className="text-[9px] text-espresso/75 font-bold uppercase tracking-wide">Volume</span>
                 <button
                   onClick={() => setIsMuted((m) => !m)}
-                  className="p-0.5 rounded text-espresso/50 hover:text-espresso transition-colors cursor-pointer"
+                  className="p-0.5 rounded text-espresso/70 hover:text-espresso transition-colors cursor-pointer"
                 >
-                  {isMuted ? <VolumeX className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />}
+                  {isMuted ? <VolumeX className="w-3 h-3 text-rose-500" /> : <Volume2 className="w-3 h-3 text-espresso" />}
                 </button>
               </div>
               <div className="flex items-center gap-2">
@@ -181,15 +181,15 @@ export default function AmbientPlayer() {
                     background: `linear-gradient(to right, #2D2A26 ${(isMuted ? 0 : volume) * 100}%, #F5E1E2 ${(isMuted ? 0 : volume) * 100}%)`,
                   }}
                 />
-                <span className="text-[9px] font-mono text-espresso/40 w-6 text-right">
+                <span className="text-[9px] font-mono text-espresso/70 font-bold w-6 text-right">
                   {Math.round((isMuted ? 0 : volume) * 100)}
                 </span>
               </div>
             </div>
 
             {activeId && (
-              <div className="flex items-center gap-1.5 text-[9px] text-espresso/50">
-                <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse flex-shrink-0" />
+              <div className="flex items-center gap-1.5 text-[9px] text-espresso/75 font-semibold">
+                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse flex-shrink-0" />
                 <span>Now playing · {activeTrack?.description}</span>
               </div>
             )}
