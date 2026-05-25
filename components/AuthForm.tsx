@@ -110,14 +110,13 @@ export default function AuthForm() {
         });
         if (error) throw error;
 
-        // 2. Insert profile record fallback
-        if (data.user) {
-          await supabase.from('profiles').upsert({
-            id: data.user.id,
-            email: data.user.email,
+        // 2. Update profile record theme/display_name if a session is returned
+        // The profiles table is automatically populated with { id, display_name } by the database trigger.
+        if (data.user && data.session) {
+          await supabase.from('profiles').update({
             display_name: displayName,
-            created_at: new Date().toISOString(),
-          }, { onConflict: 'id' });
+            theme_preference: selectedTheme,
+          }).eq('id', data.user.id);
         }
 
         // 3. Immediately log out the automatically logged-in session (since confirm is disabled)
@@ -134,14 +133,12 @@ export default function AuthForm() {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
 
-        // Upsert profile in case it was never created (e.g. after email confirm)
+        // Update profile display name and theme preference in case they need sync
         if (data.user) {
-          await supabase.from('profiles').upsert({
-            id: data.user.id,
-            email: data.user.email,
+          await supabase.from('profiles').update({
             display_name: data.user.user_metadata?.display_name || email.split('@')[0],
-            created_at: new Date().toISOString(),
-          }, { onConflict: 'id' });
+            theme_preference: data.user.user_metadata?.theme || 'default',
+          }).eq('id', data.user.id);
         }
 
         // Clean up ambient sound before redirecting
@@ -362,34 +359,30 @@ export default function AuthForm() {
             </AnimatePresence>
 
             <div className="space-y-3">
-              {/* Display Name Input (Only on Sign Up) */}
+              {/* Display Name & Theme Selector (Only on Sign Up, Animated cleanly) */}
               <AnimatePresence initial={false}>
                 {isSignUp && (
-                  <div className="space-y-3">
-                    <motion.div 
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="relative overflow-hidden"
-                    >
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2, ease: 'easeOut' }}
+                    className="space-y-3 pb-3"
+                  >
+                    <div className="relative">
                       <User className="absolute left-3 top-3.5 h-4 w-4 text-espresso/65" />
                       <input
                         type="text"
                         placeholder="Display Name"
-                        required
+                        required={isSignUp}
                         value={displayName}
                         onChange={(e) => setDisplayName(e.target.value)}
                         className="w-full pl-10 pr-4 py-3 bg-canvas/90 border border-blush/40 rounded-xl text-sm focus:outline-none focus:border-espresso/40 text-espresso transition-all placeholder:text-espresso/50 font-medium shadow-inner"
                       />
-                    </motion.div>
+                    </div>
                     
                     {/* Theme selector */}
-                    <motion.div 
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="relative overflow-hidden space-y-1.5 pb-1"
-                    >
+                    <div className="space-y-1.5 pb-1">
                       <label className="text-[10px] font-bold uppercase tracking-wider text-espresso/60 block">
                         Choose Journal Theme
                       </label>
@@ -413,8 +406,8 @@ export default function AuthForm() {
                           </button>
                         ))}
                       </div>
-                    </motion.div>
-                  </div>
+                    </div>
+                  </motion.div>
                 )}
               </AnimatePresence>
 
