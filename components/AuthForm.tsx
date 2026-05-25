@@ -32,6 +32,7 @@ export default function AuthForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [selectedTheme, setSelectedTheme] = useState<'default' | 'midnight' | 'forest'>('default');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -101,7 +102,10 @@ export default function AuthForm() {
           email,
           password,
           options: {
-            data: { display_name: displayName },
+            data: { 
+              display_name: displayName,
+              theme: selectedTheme
+            },
           },
         });
         if (error) throw error;
@@ -168,7 +172,7 @@ export default function AuthForm() {
   const strength = getPasswordStrength(password);
 
   return (
-    <div className="flex min-h-screen bg-canvas items-center justify-center p-4">
+    <div className={`flex min-h-screen bg-canvas items-center justify-center p-4 theme-${selectedTheme}`}>
       {/* Digital Open Notebook Card */}
       <div className="w-full max-w-4xl bg-white/70 backdrop-blur-md rounded-3xl shadow-[0_15px_40px_rgba(45,42,38,0.12)] border border-blush/35 overflow-hidden grid md:grid-cols-2 min-h-[580px] relative">
         
@@ -191,9 +195,10 @@ export default function AuthForm() {
         {/* ─── Left Page: Cozy Scrapbook Cover ─── */}
         <div 
           ref={coverRef}
-          className="relative bg-gradient-to-tr from-blush/55 via-lavender/35 to-sage/35 p-8 flex flex-col justify-between overflow-hidden border-r border-espresso/10 select-none"
+          className="relative p-8 flex flex-col justify-between overflow-hidden border-r border-espresso/10 select-none"
           style={{
-            backgroundImage: 'radial-gradient(circle, rgba(45, 42, 38, 0.05) 1.5px, transparent 1.5px)',
+            background: 'var(--cover-gradient)',
+            backgroundImage: 'radial-gradient(circle, var(--paper-line-color) 1.5px, transparent 1.5px), var(--cover-gradient)',
             backgroundSize: '20px 20px',
           }}
         >
@@ -287,9 +292,9 @@ export default function AuthForm() {
 
         {/* ─── Right Page: Form & Ruled Lined Page ─── */}
         <div 
-          className="p-8 flex flex-col justify-center bg-[#FAF7F2] relative"
+          className="p-8 flex flex-col justify-center bg-canvas relative"
           style={{
-            backgroundImage: 'linear-gradient(rgba(45, 42, 38, 0.045) 1px, transparent 1px)',
+            backgroundImage: 'linear-gradient(var(--paper-line-color) 1px, transparent 1px)',
             backgroundSize: '100% 28px',
           }}
         >
@@ -360,22 +365,56 @@ export default function AuthForm() {
               {/* Display Name Input (Only on Sign Up) */}
               <AnimatePresence initial={false}>
                 {isSignUp && (
-                  <motion.div 
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="relative overflow-hidden"
-                  >
-                    <User className="absolute left-3 top-3.5 h-4 w-4 text-espresso/65" />
-                    <input
-                      type="text"
-                      placeholder="Display Name"
-                      required
-                      value={displayName}
-                      onChange={(e) => setDisplayName(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 bg-canvas/90 border border-blush/40 rounded-xl text-sm focus:outline-none focus:border-espresso/40 text-espresso transition-all placeholder:text-espresso/50 font-medium shadow-inner"
-                    />
-                  </motion.div>
+                  <div className="space-y-3">
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="relative overflow-hidden"
+                    >
+                      <User className="absolute left-3 top-3.5 h-4 w-4 text-espresso/65" />
+                      <input
+                        type="text"
+                        placeholder="Display Name"
+                        required
+                        value={displayName}
+                        onChange={(e) => setDisplayName(e.target.value)}
+                        className="w-full pl-10 pr-4 py-3 bg-canvas/90 border border-blush/40 rounded-xl text-sm focus:outline-none focus:border-espresso/40 text-espresso transition-all placeholder:text-espresso/50 font-medium shadow-inner"
+                      />
+                    </motion.div>
+                    
+                    {/* Theme selector */}
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="relative overflow-hidden space-y-1.5 pb-1"
+                    >
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-espresso/60 block">
+                        Choose Journal Theme
+                      </label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          { id: 'default', label: 'Default Cream', bg: 'bg-[#FAF7F2] border-[#2D2A26]/10 text-[#2D2A26]' },
+                          { id: 'midnight', label: 'Midnight Ink', bg: 'bg-[#151518] border-[#E8E7E3]/10 text-[#E8E7E3]' },
+                          { id: 'forest', label: 'Forest Sage', bg: 'bg-[#EDF2EC] border-[#243828]/10 text-[#243828]' },
+                        ].map((t) => (
+                          <button
+                            key={t.id}
+                            type="button"
+                            onClick={() => setSelectedTheme(t.id as any)}
+                            className={`p-2 rounded-xl border text-[9px] font-extrabold cursor-pointer transition-all text-center flex items-center justify-center h-9 ${t.bg} ${
+                              selectedTheme === t.id 
+                                ? 'ring-2 ring-lavender scale-102 border-transparent shadow-sm' 
+                                : 'opacity-70 hover:opacity-100'
+                            }`}
+                          >
+                            <span>{t.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </motion.div>
+                  </div>
                 )}
               </AnimatePresence>
 

@@ -94,6 +94,7 @@ export default function Workspace() {
   const [userId, setUserId] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string | null>(null);
+  const [theme, setTheme] = useState<'default' | 'midnight' | 'forest'>('default');
   const [memberSince, setMemberSince] = useState<string>('');
   
   // All journal entries list
@@ -143,7 +144,31 @@ export default function Workspace() {
     stickerOptions.find((s) => s.id === id);
 
   // Mood → inline style mapping for calendar cells (Tailwind v4 can't resolve dynamic class strings)
-  const getMoodCalendarInlineStyle = (mood: string): React.CSSProperties => {
+  const getMoodCalendarInlineStyle = (mood: string, activeTheme = theme): React.CSSProperties => {
+    if (activeTheme === 'midnight') {
+      const map: Record<string, React.CSSProperties> = {
+        '🌸': { backgroundColor: 'rgba(249, 168, 212, 0.15)', borderColor: 'rgba(249, 168, 212, 0.4)', color: '#F9A8D4' },
+        '☀️': { backgroundColor: 'rgba(253, 224, 71, 0.15)', borderColor: 'rgba(253, 224, 71, 0.4)', color: '#FDE047' },
+        '☁️': { backgroundColor: 'rgba(148, 163, 184, 0.15)', borderColor: 'rgba(148, 163, 184, 0.4)', color: '#94A3B8' },
+        '🍂': { backgroundColor: 'rgba(252, 211, 77, 0.15)', borderColor: 'rgba(252, 211, 77, 0.4)', color: '#FCD34D' },
+        '🎀': { backgroundColor: 'rgba(196, 181, 254, 0.15)', borderColor: 'rgba(196, 181, 254, 0.4)', color: '#C4B5FD' },
+        '🧸': { backgroundColor: 'rgba(253, 186, 116, 0.15)', borderColor: 'rgba(253, 186, 116, 0.4)', color: '#FDBA74' },
+      };
+      return map[mood] || { backgroundColor: 'rgba(59, 46, 92, 0.2)', borderColor: 'rgba(196, 181, 254, 0.3)', color: '#E8E7E3' };
+    }
+    
+    if (activeTheme === 'forest') {
+      const map: Record<string, React.CSSProperties> = {
+        '🌸': { backgroundColor: 'rgba(249, 168, 212, 0.3)', borderColor: 'rgba(249, 168, 212, 0.5)', color: '#243828' },
+        '☀️': { backgroundColor: 'rgba(253, 224, 71, 0.3)', borderColor: 'rgba(253, 224, 71, 0.5)', color: '#243828' },
+        '☁️': { backgroundColor: 'rgba(148, 163, 184, 0.3)', borderColor: 'rgba(148, 163, 184, 0.5)', color: '#243828' },
+        '🍂': { backgroundColor: 'rgba(252, 211, 77, 0.3)', borderColor: 'rgba(252, 211, 77, 0.5)', color: '#243828' },
+        '🎀': { backgroundColor: 'rgba(196, 181, 254, 0.3)', borderColor: 'rgba(196, 181, 254, 0.5)', color: '#243828' },
+        '🧸': { backgroundColor: 'rgba(253, 186, 116, 0.3)', borderColor: 'rgba(253, 186, 116, 0.5)', color: '#243828' },
+      };
+      return map[mood] || { backgroundColor: 'rgba(194, 209, 192, 0.4)', borderColor: 'rgba(194, 209, 192, 0.6)', color: '#243828' };
+    }
+
     const map: Record<string, React.CSSProperties> = {
       '🌸': { backgroundColor: 'rgba(252, 231, 243, 0.85)', borderColor: 'rgba(249, 168, 212, 0.7)' }, // sakura → pink
       '☀️': { backgroundColor: 'rgba(254, 249, 195, 0.85)', borderColor: 'rgba(253, 224, 71, 0.7)' },  // sunny → yellow
@@ -152,11 +177,35 @@ export default function Workspace() {
       '🎀': { backgroundColor: 'rgba(243, 232, 255, 0.85)', borderColor: 'rgba(216, 180, 254, 0.7)' }, // ribbon → purple
       '🧸': { backgroundColor: 'rgba(255, 237, 213, 0.85)', borderColor: 'rgba(253, 186, 116, 0.7)' }, // teddy → orange
     };
-    return map[mood] || { backgroundColor: 'rgba(226, 217, 243, 0.5)', borderColor: 'rgba(196, 181, 253, 0.5)' };
+    return map[mood] || { backgroundColor: 'rgba(226, 217, 243, 0.5)', borderColor: 'rgba(196, 181, 254, 0.5)' };
   };
 
   // Mood → full-page background gradient (whole workspace ambient color shift)
-  const getMoodPageBg = (mood: string): React.CSSProperties => {
+  const getMoodPageBg = (mood: string, activeTheme = theme): React.CSSProperties => {
+    if (activeTheme === 'midnight') {
+      const map: Record<string, React.CSSProperties> = {
+        '🌸': { background: 'linear-gradient(135deg, #2b1f27 0%, #3d2232 40%, #151518 100%)' },
+        '☀️': { background: 'linear-gradient(135deg, #2d2b1f 0%, #3e3b22 40%, #151518 100%)' },
+        '☁️': { background: 'linear-gradient(135deg, #1f232d 0%, #252d3a 40%, #151518 100%)' },
+        '🍂': { background: 'linear-gradient(135deg, #2d261f 0%, #3a2e22 30%, #151518 100%)' },
+        '🎀': { background: 'linear-gradient(135deg, #231f2d 0%, #2d223f 40%, #151518 100%)' },
+        '🧸': { background: 'linear-gradient(135deg, #2d231f 0%, #3b2c22 30%, #151518 100%)' },
+      };
+      return map[mood] || { background: 'linear-gradient(135deg, #151518 0%, #151518 100%)' };
+    }
+
+    if (activeTheme === 'forest') {
+      const map: Record<string, React.CSSProperties> = {
+        '🌸': { background: 'linear-gradient(135deg, #f4eef1 0%, #e8d0db 40%, #EDF2EC 100%)' },
+        '☀️': { background: 'linear-gradient(135deg, #f5f2e6 0%, #e8ddb5 40%, #EDF2EC 100%)' },
+        '☁️': { background: 'linear-gradient(135deg, #ebf0ee 0%, #cedbd5 40%, #EDF2EC 100%)' },
+        '🍂': { background: 'linear-gradient(135deg, #f5efe6 0%, #e6d3ba 30%, #EDF2EC 100%)' },
+        '🎀': { background: 'linear-gradient(135deg, #eeeef5 0%, #d5d4e8 40%, #EDF2EC 100%)' },
+        '🧸': { background: 'linear-gradient(135deg, #f5ebe6 0%, #e6ceba 30%, #EDF2EC 100%)' },
+      };
+      return map[mood] || { background: 'linear-gradient(135deg, #EDF2EC 0%, #EDF2EC 100%)' };
+    }
+
     const map: Record<string, React.CSSProperties> = {
       '🌸': { background: 'linear-gradient(135deg, #fdf6f9 0%, #fce7f3 40%, #faf7f2 100%)' }, // sakura → dreamy pink
       '☀️': { background: 'linear-gradient(135deg, #fffdf0 0%, #fef9c3 40%, #faf7f2 100%)' }, // sunny → warm gold
@@ -169,7 +218,31 @@ export default function Workspace() {
   };
 
   // Mood → notebook paper tint color (subtle border + background)
-  const getMoodPaperBorder = (mood: string): string => {
+  const getMoodPaperBorder = (mood: string, activeTheme = theme): string => {
+    if (activeTheme === 'midnight') {
+      const map: Record<string, string> = {
+        '🌸': 'rgba(249, 168, 212, 0.2)', // pink
+        '☀️': 'rgba(253, 224, 71, 0.2)',  // yellow
+        '☁️': 'rgba(148, 163, 184, 0.2)', // slate
+        '🍂': 'rgba(252, 211, 77, 0.2)',  // amber
+        '🎀': 'rgba(196, 181, 254, 0.2)', // purple
+        '🧸': 'rgba(253, 186, 116, 0.2)', // orange
+      };
+      return map[mood] || 'rgba(232, 231, 227, 0.15)';
+    }
+
+    if (activeTheme === 'forest') {
+      const map: Record<string, string> = {
+        '🌸': 'rgba(249, 168, 212, 0.25)', // pink
+        '☀️': 'rgba(253, 224, 71, 0.25)',  // yellow
+        '☁️': 'rgba(148, 163, 184, 0.25)', // slate
+        '🍂': 'rgba(252, 211, 77, 0.25)',  // amber
+        '🎀': 'rgba(196, 181, 254, 0.25)', // purple
+        '🧸': 'rgba(253, 186, 116, 0.25)', // orange
+      };
+      return map[mood] || 'rgba(36, 56, 40, 0.15)';
+    }
+
     const map: Record<string, string> = {
       '🌸': 'rgba(249, 168, 212, 0.35)', // pink
       '☀️': 'rgba(253, 224, 71, 0.35)',  // yellow
@@ -289,6 +362,10 @@ export default function Workspace() {
         setTempName(user.user_metadata?.display_name || user.email?.split('@')[0] || 'User');
         setMemberSince(new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }));
       }
+
+      // Get theme preference from user metadata
+      const userTheme = user.user_metadata?.theme || 'default';
+      setTheme(userTheme);
 
       // 2. Fetch journal entries
       await fetchUserEntries(user.id);
@@ -424,6 +501,24 @@ export default function Workspace() {
       setTimeout(() => setProfileMessage(null), 3000);
     } catch (err: any) {
       setProfileMessage({ type: 'error', text: err.message || 'Failed to update name.' });
+    }
+  };
+
+  // Update theme preference logic
+  const handleUpdateTheme = async (newTheme: 'default' | 'midnight' | 'forest') => {
+    setProfileMessage(null);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        data: { theme: newTheme }
+      });
+
+      if (error) throw error;
+
+      setTheme(newTheme);
+      setProfileMessage({ type: 'success', text: '✨ Journal theme updated successfully!' });
+      setTimeout(() => setProfileMessage(null), 3000);
+    } catch (err: any) {
+      setProfileMessage({ type: 'error', text: err.message || 'Failed to update theme.' });
     }
   };
 
@@ -716,9 +811,9 @@ export default function Workspace() {
 
   return (
     <div
-      className="min-h-screen flex flex-col font-sans relative"
+      className={`min-h-screen flex flex-col font-sans relative theme-${theme}`}
       style={{
-        ...getMoodPageBg(selectedMood),
+        ...getMoodPageBg(selectedMood, theme),
         transition: 'background 0.8s ease',
       }}
     >
@@ -1189,9 +1284,8 @@ export default function Workspace() {
                       onChange={(e) => setJournalText(e.target.value)}
                       className="w-full flex-1 bg-transparent resize-none focus:outline-none text-espresso text-sm font-medium leading-8 tracking-wide placeholder:text-espresso/55 cursor-text select-text"
                       style={{
-                        backgroundImage: 'linear-gradient(rgba(45, 42, 38, 0.09) 1px, transparent 1px)',
+                        backgroundImage: 'linear-gradient(var(--paper-line-color) 1px, transparent 1px)',
                         backgroundSize: '100% 2rem',
-                        caretColor: '#000000',   // pure black — visible on all mood backgrounds
                       }}
                     />
                   </div>
@@ -1637,6 +1731,49 @@ export default function Workspace() {
                   <div className="bg-canvas/50 p-3 rounded-2xl border border-blush/10 text-center">
                     <p className="text-[10px] text-espresso/40 font-semibold uppercase tracking-wider">Member Since</p>
                     <p className="text-xs font-semibold text-espresso mt-2.5">{memberSince || 'Just now'}</p>
+                  </div>
+                </div>
+
+                {/* Theme Selector Section */}
+                <div className="w-full pt-3 border-t border-canvas space-y-2">
+                  <p className="text-[10px] text-espresso/40 font-bold uppercase tracking-wider text-left">Journal Theme</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { id: 'default', label: 'Default Cream', bg: 'bg-[#FAF7F2] border-[#2D2A26]/10 text-[#2D2A26]' },
+                      { id: 'midnight', label: 'Midnight Ink', bg: 'bg-[#151518] border-[#E8E7E3]/10 text-[#E8E7E3]' },
+                      { id: 'forest', label: 'Forest Sage', bg: 'bg-[#EDF2EC] border-[#243828]/10 text-[#243828]' },
+                    ].map((t) => (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => handleUpdateTheme(t.id as any)}
+                        className={`p-2 rounded-xl border text-[9px] font-extrabold cursor-pointer transition-all text-center flex items-center justify-center h-9 ${t.bg} ${
+                          theme === t.id 
+                            ? 'ring-2 ring-lavender scale-102 border-transparent shadow-sm' 
+                            : 'opacity-70 hover:opacity-100'
+                        }`}
+                      >
+                        <span>{t.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Gated Premium Themes */}
+                <div className="w-full pt-2 space-y-1.5 opacity-60">
+                  <p className="text-[9px] text-espresso/35 font-bold uppercase tracking-wider text-left flex items-center justify-between">
+                    <span>✨ Premium Themes</span>
+                    <span className="text-[8px] bg-lavender/35 border border-lavender/40 px-1.5 py-0.5 rounded text-espresso/60 font-semibold">Upgrade Required</span>
+                  </p>
+                  <div className="grid grid-cols-2 gap-2 text-left">
+                    <div className="p-2 border border-espresso/5 bg-canvas/30 rounded-xl text-[9px] font-bold text-espresso/40 flex items-center justify-between select-none">
+                      <span>🌸 Sunset Lavender</span>
+                      <span>🔒</span>
+                    </div>
+                    <div className="p-2 border border-espresso/5 bg-canvas/30 rounded-xl text-[9px] font-bold text-espresso/40 flex items-center justify-between select-none">
+                      <span>🌊 Ocean Breeze</span>
+                      <span>🔒</span>
+                    </div>
                   </div>
                 </div>
 

@@ -1,16 +1,70 @@
 @import "tailwindcss";
 
 @theme {
+  --color-canvas: var(--color-canvas);
+  --color-espresso: var(--color-espresso);
+  --color-lavender: var(--color-lavender);
+  --color-sage: var(--color-sage);
+  --color-blush: var(--color-blush);
+}
+
+:root {
   --color-canvas: #FAF7F2;
-  /* Soft Cream/Almond paper background */
   --color-espresso: #2D2A26;
-  /* Soft deep charcoal for text */
   --color-lavender: #E2D9F3;
-  /* Calm purple accent */
   --color-sage: #D1E2D3;
-  /* Quiet green accent */
   --color-blush: #F5E1E2;
-  /* Soft pink highlight */
+  --cover-gradient: linear-gradient(135deg, rgba(245, 225, 226, 0.55) 0%, rgba(226, 217, 243, 0.35) 40%, rgba(209, 226, 211, 0.35) 100%);
+  --paper-line-color: rgba(45, 42, 38, 0.09);
+  --selection-bg: rgba(226, 217, 243, 0.5);
+  --selection-text: #2D2A26;
+  --scrollbar-thumb: rgba(45, 42, 38, 0.15);
+  --caret-color: #000000;
+}
+
+/* Default Theme */
+.theme-default {
+  --color-canvas: #FAF7F2;
+  --color-espresso: #2D2A26;
+  --color-lavender: #E2D9F3;
+  --color-sage: #D1E2D3;
+  --color-blush: #F5E1E2;
+  --cover-gradient: linear-gradient(135deg, rgba(245, 225, 226, 0.55) 0%, rgba(226, 217, 243, 0.35) 40%, rgba(209, 226, 211, 0.35) 100%);
+  --paper-line-color: rgba(45, 42, 38, 0.09);
+  --selection-bg: rgba(226, 217, 243, 0.5);
+  --selection-text: #2D2A26;
+  --scrollbar-thumb: rgba(45, 42, 38, 0.15);
+  --caret-color: #000000;
+}
+
+/* Midnight Ink (Dark Mode) */
+.theme-midnight {
+  --color-canvas: #151518;
+  --color-espresso: #E8E7E3;
+  --color-lavender: #3B2E5C;
+  --color-sage: #213325;
+  --color-blush: #472D2E;
+  --cover-gradient: linear-gradient(135deg, rgba(71, 45, 46, 0.6) 0%, rgba(59, 46, 92, 0.4) 40%, rgba(33, 51, 37, 0.3) 100%);
+  --paper-line-color: rgba(232, 231, 227, 0.12);
+  --selection-bg: rgba(59, 46, 92, 0.7);
+  --selection-text: #E8E7E3;
+  --scrollbar-thumb: rgba(232, 231, 227, 0.25);
+  --caret-color: #E8E7E3;
+}
+
+/* Forest Sage (Earth/Nature) */
+.theme-forest {
+  --color-canvas: #EDF2EC;
+  --color-espresso: #243828;
+  --color-lavender: #C2D1C0;
+  --color-sage: #8EA885;
+  --color-blush: #D9BEB0;
+  --cover-gradient: linear-gradient(135deg, rgba(217, 190, 176, 0.6) 0%, rgba(194, 209, 192, 0.4) 40%, rgba(142, 168, 133, 0.4) 100%);
+  --paper-line-color: rgba(36, 56, 40, 0.1);
+  --selection-bg: rgba(194, 209, 192, 0.6);
+  --selection-text: #243828;
+  --scrollbar-thumb: rgba(36, 56, 40, 0.2);
+  --caret-color: #243828;
 }
 
 body {
@@ -20,20 +74,17 @@ body {
   margin: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.4s ease, color 0.4s ease;
 }
 
-/* ── Cursor & caret: pure black, always visible ── */
-/* NOTE: Do NOT set z-index here — it breaks sticker drag events.
-   The caret renders inside the textarea regardless of stacking order.
-   The sticker overlay is pointer-events-none + transparent, so the caret
-   is always visually visible through it. */
+/* ── Cursor & caret: dynamic carets based on active theme ── */
 textarea,
 input[type="text"],
 input[type="email"],
 input[type="password"],
 input[type="search"],
 input {
-  caret-color: #000000 !important;   /* solid black — always visible on any bg */
+  caret-color: var(--caret-color) !important;
   cursor: text !important;
   -webkit-user-select: text !important;
   user-select: text !important;
@@ -41,21 +92,21 @@ input {
 
 textarea:focus,
 input:focus {
-  caret-color: #000000 !important;
+  caret-color: var(--caret-color) !important;
   outline: none;
 }
 
-/* Global fallback: black caret on any contenteditable */
+/* Global fallback caret on any contenteditable */
 [contenteditable],
 [contenteditable="true"] {
-  caret-color: #000000 !important;
+  caret-color: var(--caret-color) !important;
   cursor: text !important;
 }
 
 /* Text selection highlight styling */
 ::selection {
-  background-color: rgba(226, 217, 243, 0.5);
-  color: #2D2A26;
+  background-color: var(--selection-bg);
+  color: var(--selection-text);
 }
 
 /* Ensure smooth scrollbar */
@@ -66,6 +117,6 @@ input:focus {
   background: transparent;
 }
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: rgba(45, 42, 38, 0.15);
+  background: var(--scrollbar-thumb);
   border-radius: 999px;
 }
