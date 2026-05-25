@@ -144,7 +144,7 @@ export default function ImageUploader({ userId, entryId, onImageUploaded }: Imag
         className={`flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full border transition-all cursor-pointer ${
           uploadedImages.length > 0
             ? 'bg-sage/40 border-sage/75 text-espresso shadow-sm'
-            : 'bg-white border border-blush/35 text-espresso/80 hover:bg-canvas/80 hover:text-espresso shadow-sm'
+            : 'bg-paper border border-blush/35 text-espresso/80 hover:bg-canvas/80 hover:text-espresso shadow-sm'
         }`}
         title="Attach photos to this memory"
       >
@@ -164,7 +164,7 @@ export default function ImageUploader({ userId, entryId, onImageUploaded }: Imag
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.95 }}
             transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-            className="absolute top-9 left-0 w-72 bg-white/95 backdrop-blur-md border border-blush/35 rounded-2xl shadow-xl p-4 space-y-3 z-50"
+            className="absolute top-9 left-0 w-72 bg-paper/95 backdrop-blur-md border border-blush/35 rounded-2xl shadow-xl p-4 space-y-3 z-50"
           >
             {/* Header */}
             <div className="text-[10px] font-bold uppercase tracking-wider text-espresso/85 flex items-center gap-1.5 justify-between">

@@ -174,7 +174,7 @@ export default function AuthForm() {
   return (
     <div className={`flex min-h-screen bg-canvas items-center justify-center p-4 theme-${selectedTheme}`}>
       {/* Digital Open Notebook Card */}
-      <div className="w-full max-w-4xl bg-white/70 backdrop-blur-md rounded-3xl shadow-[0_15px_40px_rgba(45,42,38,0.12)] border border-blush/35 overflow-hidden grid md:grid-cols-2 min-h-[580px] relative">
+      <div className="w-full max-w-4xl bg-paper/70 backdrop-blur-md rounded-3xl shadow-[0_15px_40px_rgba(45,42,38,0.12)] border border-blush/35 overflow-hidden grid md:grid-cols-2 min-h-[580px] relative">
         
         {/* ─── Spiral Binder Spine ─── */}
         <div className="absolute left-1/2 top-0 bottom-0 w-8 -ml-4 z-20 flex flex-col justify-around py-10 pointer-events-none hidden md:flex">
@@ -230,7 +230,7 @@ export default function AuthForm() {
                 />
               </div>
               <div className="mt-3 text-center">
-                <span className="font-serif italic text-espresso font-semibold text-xs tracking-wide">
+                <span className="font-serif italic text-[#2D2A26] font-semibold text-xs tracking-wide">
                   my sanctuary 📖
                 </span>
               </div>
@@ -299,7 +299,7 @@ export default function AuthForm() {
           }}
         >
           {/* Mini Ambient sound player */}
-          <div className="absolute top-4 right-4 z-30 flex items-center gap-1.5 bg-white border border-blush/45 rounded-full px-2.5 py-1 text-espresso shadow-md text-[9px] font-bold">
+          <div className="absolute top-4 right-4 z-30 flex items-center gap-1.5 bg-paper border border-blush/45 rounded-full px-2.5 py-1 text-espresso shadow-md text-[9px] font-bold">
             <Music className="w-3 h-3 text-lavender animate-pulse" />
             <span>Sounds:</span>
             <button

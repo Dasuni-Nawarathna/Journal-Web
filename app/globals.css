@@ -6,6 +6,7 @@
   --color-lavender: var(--color-lavender);
   --color-sage: var(--color-sage);
   --color-blush: var(--color-blush);
+  --color-paper: var(--color-paper);
 }
 
 :root {
@@ -14,6 +15,7 @@
   --color-lavender: #E2D9F3;
   --color-sage: #D1E2D3;
   --color-blush: #F5E1E2;
+  --color-paper: #FFFFFF;
   --cover-gradient: linear-gradient(135deg, rgba(245, 225, 226, 0.55) 0%, rgba(226, 217, 243, 0.35) 40%, rgba(209, 226, 211, 0.35) 100%);
   --paper-line-color: rgba(45, 42, 38, 0.09);
   --selection-bg: rgba(226, 217, 243, 0.5);
@@ -29,6 +31,7 @@
   --color-lavender: #E2D9F3;
   --color-sage: #D1E2D3;
   --color-blush: #F5E1E2;
+  --color-paper: #FFFFFF;
   --cover-gradient: linear-gradient(135deg, rgba(245, 225, 226, 0.55) 0%, rgba(226, 217, 243, 0.35) 40%, rgba(209, 226, 211, 0.35) 100%);
   --paper-line-color: rgba(45, 42, 38, 0.09);
   --selection-bg: rgba(226, 217, 243, 0.5);
@@ -44,6 +47,7 @@
   --color-lavender: #3B2E5C;
   --color-sage: #213325;
   --color-blush: #472D2E;
+  --color-paper: #212126;
   --cover-gradient: linear-gradient(135deg, rgba(71, 45, 46, 0.6) 0%, rgba(59, 46, 92, 0.4) 40%, rgba(33, 51, 37, 0.3) 100%);
   --paper-line-color: rgba(232, 231, 227, 0.12);
   --selection-bg: rgba(59, 46, 92, 0.7);
@@ -59,6 +63,7 @@
   --color-lavender: #C2D1C0;
   --color-sage: #8EA885;
   --color-blush: #D9BEB0;
+  --color-paper: #FFFFFF;
   --cover-gradient: linear-gradient(135deg, rgba(217, 190, 176, 0.6) 0%, rgba(194, 209, 192, 0.4) 40%, rgba(142, 168, 133, 0.4) 100%);
   --paper-line-color: rgba(36, 56, 40, 0.1);
   --selection-bg: rgba(194, 209, 192, 0.6);

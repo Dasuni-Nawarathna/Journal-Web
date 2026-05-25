@@ -97,7 +97,7 @@ export default function AmbientPlayer() {
         className={`flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full border transition-all cursor-pointer ${
           activeId
             ? 'bg-lavender/40 border-lavender text-espresso shadow-sm'
-            : 'bg-white border border-blush/35 text-espresso/80 hover:bg-canvas/80 hover:text-espresso shadow-sm'
+            : 'bg-paper border border-blush/35 text-espresso/80 hover:bg-canvas/80 hover:text-espresso shadow-sm'
         }`}
         title="Ambient sound player"
       >
@@ -115,7 +115,7 @@ export default function AmbientPlayer() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.95 }}
             transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-            className="absolute top-9 right-0 w-60 bg-white/96 backdrop-blur-md border border-blush/35 rounded-2xl shadow-xl p-4 space-y-3 z-50"
+            className="absolute top-9 right-0 w-60 bg-paper/96 backdrop-blur-md border border-blush/35 rounded-2xl shadow-xl p-4 space-y-3 z-50"
           >
             <div className="text-[10px] font-bold uppercase tracking-wider text-espresso/85 flex items-center gap-1.5">
               <Music className="w-3 h-3 text-lavender" />
@@ -178,7 +178,7 @@ export default function AmbientPlayer() {
                   onChange={(e) => { setIsMuted(false); setVolume(Number(e.target.value)); }}
                   className="flex-1 h-1 rounded-full appearance-none cursor-pointer"
                   style={{
-                    background: `linear-gradient(to right, #2D2A26 ${(isMuted ? 0 : volume) * 100}%, #F5E1E2 ${(isMuted ? 0 : volume) * 100}%)`,
+                    background: `linear-gradient(to right, var(--color-espresso) ${(isMuted ? 0 : volume) * 100}%, var(--color-blush) ${(isMuted ? 0 : volume) * 100}%)`,
                   }}
                 />
                 <span className="text-[9px] font-mono text-espresso/70 font-bold w-6 text-right">

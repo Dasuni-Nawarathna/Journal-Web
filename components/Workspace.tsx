@@ -919,7 +919,7 @@ export default function Workspace() {
         
         {/* Live Clock Display */}
         {timeString && (
-          <div className="hidden md:flex items-center gap-2 px-4 py-1.5 bg-white border border-blush/30 text-espresso text-xs shadow-inner rounded-full">
+          <div className="hidden md:flex items-center gap-2 px-4 py-1.5 bg-paper border border-blush/30 text-espresso text-xs shadow-inner rounded-full">
             <Clock className="w-3.5 h-3.5 text-lavender animate-spin-slow" />
             <span className="font-semibold font-mono">{timeString}</span>
             <span className="text-[10px] text-espresso/60">•</span>
@@ -944,7 +944,7 @@ export default function Workspace() {
           {userEmail && (
             <button 
               onClick={handleOpenProfile}
-              className="flex items-center gap-1.5 text-xs text-espresso bg-white hover:bg-white px-3 py-1 rounded-full border border-blush/35 transition-all hover:scale-105 active:scale-95 cursor-pointer font-bold shadow-sm"
+              className="flex items-center gap-1.5 text-xs text-espresso bg-paper hover:bg-paper px-3 py-1 rounded-full border border-blush/35 transition-all hover:scale-105 active:scale-95 cursor-pointer font-bold shadow-sm"
             >
               <User className="w-3 h-3 text-espresso/80 font-extrabold" />
               <span>{displayName}</span>
@@ -986,7 +986,7 @@ export default function Workspace() {
               )}
 
               {/* Interactive Custom Calendar Panel */}
-              <div className="bg-white/70 backdrop-blur-md p-5 rounded-3xl border border-blush/35 shadow-sm space-y-4">
+              <div className="bg-paper/70 backdrop-blur-md p-5 rounded-3xl border border-blush/35 shadow-sm space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold uppercase tracking-wider text-espresso flex items-center gap-1.5">
                     <CalendarIcon className="w-4 h-4 text-lavender font-bold" />
@@ -1111,7 +1111,7 @@ export default function Workspace() {
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   onClick={() => setActiveStickerId(null)}
-                  className="flex-1 bg-white rounded-3xl shadow-xl shadow-espresso/[0.02] p-6 flex flex-col relative min-h-[500px] overflow-hidden"
+                  className="flex-1 bg-paper rounded-3xl shadow-xl shadow-espresso/[0.02] p-6 flex flex-col relative min-h-[500px] overflow-hidden"
                   style={{
                     borderWidth: '1.5px',
                     borderStyle: 'solid',
@@ -1359,7 +1359,7 @@ export default function Workspace() {
             {/* Right Column: Past Memories & Scrapbook Sticker Drawer (3 Cols) */}
             <div className="lg:col-span-3 space-y-4 flex flex-col">
               {/* Draggable Sticker Kit Drawer */}
-              <div className='bg-white/60 backdrop-blur-md p-4 rounded-3xl border border-blush/25 shadow-sm space-y-3'>
+              <div className='bg-paper/60 backdrop-blur-md p-4 rounded-3xl border border-blush/25 shadow-sm space-y-3'>
                 <div className='text-xs font-bold uppercase tracking-wider text-espresso flex items-center gap-1.5 pb-2 border-b border-canvas'>
                   <Smile className='w-4 h-4 text-lavender animate-bounce' />
                   <span>Scrapbook Sticker Drawer</span>
@@ -1410,7 +1410,7 @@ export default function Workspace() {
               </div>
 
               {/* Past Memories list with Module A local decryption preview loops */}
-              <div className='bg-white/50 backdrop-blur-sm p-4 rounded-3xl border border-blush/20 flex flex-col flex-1 h-[270px]'>
+              <div className='bg-paper/50 backdrop-blur-sm p-4 rounded-3xl border border-blush/20 flex flex-col flex-1 h-[270px]'>
                 <div className='text-xs font-bold uppercase tracking-wider text-espresso flex items-center gap-1.5 pb-3 border-b border-canvas'>
                   <BookOpen className='w-4 h-4 text-sage' />
                   <span>Memories Logs</span>
@@ -1442,7 +1442,7 @@ export default function Workspace() {
                           className={`p-3 rounded-2xl border text-left cursor-pointer transition-all hover:scale-[1.02] active:scale-98 shadow-sm flex flex-col gap-1 ${
                             isSelected 
                               ? 'bg-espresso text-canvas border-espresso font-bold' 
-                              : 'bg-white border border-blush/20 hover:border-lavender hover:bg-canvas/50'
+                              : 'bg-paper border border-blush/20 hover:border-lavender hover:bg-canvas/50'
                           }`}
                         >
                           <div className='flex items-center justify-between'>
@@ -1488,7 +1488,7 @@ export default function Workspace() {
             exit={{ opacity: 0, scale: 0.95 }}
             className="flex-1 flex flex-col p-6 max-w-6xl w-full mx-auto space-y-6"
           >
-            <div className="bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-blush/20 shadow-xl flex-1 flex flex-col relative overflow-hidden min-h-[500px]">
+            <div className="bg-paper/60 backdrop-blur-md p-6 rounded-3xl border border-blush/20 shadow-xl flex-1 flex flex-col relative overflow-hidden min-h-[500px]">
               
               {/* Map view header information bar */}
               <div className="flex items-center justify-between pb-4 border-b border-canvas z-10">
@@ -1588,7 +1588,7 @@ export default function Workspace() {
                                 initial={{ opacity: 0, scale: 0.9, y: 10 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.9, y: 10 }}
-                                className="absolute bottom-10 left-1/2 -translate-x-1/2 w-52 bg-white/95 border border-blush/25 backdrop-blur-md rounded-2xl p-3 shadow-xl z-50 pointer-events-auto space-y-2 text-espresso text-left"
+                                className="absolute bottom-10 left-1/2 -translate-x-1/2 w-52 bg-paper/95 border border-blush/25 backdrop-blur-md rounded-2xl p-3 shadow-xl z-50 pointer-events-auto space-y-2 text-espresso text-left"
                               >
                                 <div className="flex items-center justify-between border-b border-canvas pb-1.5">
                                   <span className="text-[10px] font-bold truncate max-w-[130px]">
@@ -1656,7 +1656,7 @@ export default function Workspace() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 15 }}
               transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-              className="bg-white/95 backdrop-blur-md rounded-3xl border border-blush/35 shadow-2xl p-6 w-full max-w-md relative overflow-hidden"
+              className="bg-paper/95 backdrop-blur-md rounded-3xl border border-blush/35 shadow-2xl p-6 w-full max-w-md relative overflow-hidden"
             >
               {/* Decorative top pattern */}
               <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-blush via-lavender to-sage" />
