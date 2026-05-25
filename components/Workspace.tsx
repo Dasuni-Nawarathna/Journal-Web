@@ -180,42 +180,7 @@ export default function Workspace() {
     return map[mood] || { backgroundColor: 'rgba(226, 217, 243, 0.5)', borderColor: 'rgba(196, 181, 254, 0.5)' };
   };
 
-  // Mood → full-page background gradient (whole workspace ambient color shift)
-  const getMoodPageBg = (mood: string, activeTheme = theme): React.CSSProperties => {
-    if (activeTheme === 'midnight') {
-      const map: Record<string, React.CSSProperties> = {
-        '🌸': { background: 'linear-gradient(135deg, #2b1f27 0%, #3d2232 40%, #151518 100%)' },
-        '☀️': { background: 'linear-gradient(135deg, #2d2b1f 0%, #3e3b22 40%, #151518 100%)' },
-        '☁️': { background: 'linear-gradient(135deg, #1f232d 0%, #252d3a 40%, #151518 100%)' },
-        '🍂': { background: 'linear-gradient(135deg, #2d261f 0%, #3a2e22 30%, #151518 100%)' },
-        '🎀': { background: 'linear-gradient(135deg, #231f2d 0%, #2d223f 40%, #151518 100%)' },
-        '🧸': { background: 'linear-gradient(135deg, #2d231f 0%, #3b2c22 30%, #151518 100%)' },
-      };
-      return map[mood] || { background: 'linear-gradient(135deg, #151518 0%, #151518 100%)' };
-    }
 
-    if (activeTheme === 'forest') {
-      const map: Record<string, React.CSSProperties> = {
-        '🌸': { background: 'linear-gradient(135deg, #f4eef1 0%, #e8d0db 40%, #EDF2EC 100%)' },
-        '☀️': { background: 'linear-gradient(135deg, #f5f2e6 0%, #e8ddb5 40%, #EDF2EC 100%)' },
-        '☁️': { background: 'linear-gradient(135deg, #ebf0ee 0%, #cedbd5 40%, #EDF2EC 100%)' },
-        '🍂': { background: 'linear-gradient(135deg, #f5efe6 0%, #e6d3ba 30%, #EDF2EC 100%)' },
-        '🎀': { background: 'linear-gradient(135deg, #eeeef5 0%, #d5d4e8 40%, #EDF2EC 100%)' },
-        '🧸': { background: 'linear-gradient(135deg, #f5ebe6 0%, #e6ceba 30%, #EDF2EC 100%)' },
-      };
-      return map[mood] || { background: 'linear-gradient(135deg, #EDF2EC 0%, #EDF2EC 100%)' };
-    }
-
-    const map: Record<string, React.CSSProperties> = {
-      '🌸': { background: 'linear-gradient(135deg, #fdf6f9 0%, #fce7f3 40%, #faf7f2 100%)' }, // sakura → dreamy pink
-      '☀️': { background: 'linear-gradient(135deg, #fffdf0 0%, #fef9c3 40%, #faf7f2 100%)' }, // sunny → warm gold
-      '☁️': { background: 'linear-gradient(135deg, #f4f6f9 0%, #e2e8f0 40%, #faf7f2 100%)' }, // cloudy → cool mist
-      '🍂': { background: 'linear-gradient(135deg, #fffbeb 0%, #fde68a 30%, #faf7f2 100%)' }, // autumn → amber glow
-      '🎀': { background: 'linear-gradient(135deg, #faf5ff 0%, #ede9fe 40%, #faf7f2 100%)' }, // ribbon → soft purple
-      '🧸': { background: 'linear-gradient(135deg, #fff7ed 0%, #fed7aa 30%, #faf7f2 100%)' }, // teddy → warm honey
-    };
-    return map[mood] || { background: 'linear-gradient(135deg, #faf7f2 0%, #faf7f2 100%)' };
-  };
 
   // Mood → notebook paper tint color (subtle border + background)
   const getMoodPaperBorder = (mood: string, activeTheme = theme): string => {
@@ -811,11 +776,7 @@ export default function Workspace() {
 
   return (
     <div
-      className={`min-h-screen flex flex-col font-sans relative theme-${theme}`}
-      style={{
-        ...getMoodPageBg(selectedMood, theme),
-        transition: 'background 0.8s ease',
-      }}
+      className={`min-h-screen flex flex-col font-sans relative bg-canvas transition-colors duration-700 theme-${theme}`}
     >
       
       {/* Module D: Biometric Lock Screen Overlay */}
