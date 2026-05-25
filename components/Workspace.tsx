@@ -36,7 +36,9 @@ import {
   Maximize2,
   Minimize2,
   Globe,
-  Compass
+  Compass,
+  Camera,
+  Loader2
 } from 'lucide-react';
 
 // Sticker Data Model Spec
@@ -96,6 +98,9 @@ export default function Workspace() {
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [theme, setTheme] = useState<'default' | 'midnight' | 'forest'>('default');
   const [memberSince, setMemberSince] = useState<string>('');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   
   // All journal entries list
   const [allEntries, setAllEntries] = useState<any[]>([]);
@@ -332,6 +337,10 @@ export default function Workspace() {
       const userTheme = user.user_metadata?.theme || 'default';
       setTheme(userTheme);
 
+      // Get avatar URL from user metadata
+      const userAvatar = user.user_metadata?.avatar_url || null;
+      setAvatarUrl(userAvatar);
+
       // 2. Fetch journal entries
       await fetchUserEntries(user.id);
     }
@@ -484,6 +493,70 @@ export default function Workspace() {
       setTimeout(() => setProfileMessage(null), 3000);
     } catch (err: any) {
       setProfileMessage({ type: 'error', text: err.message || 'Failed to update theme.' });
+    }
+  };
+
+  // Upload profile picture avatar
+  const handleUploadAvatar = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !userId) return;
+
+    if (!file.type.startsWith('image/')) {
+      setProfileMessage({ type: 'error', text: 'Only image files are allowed.' });
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setProfileMessage({ type: 'error', text: 'Image must be smaller than 5MB.' });
+      return;
+    }
+
+    setIsUploadingAvatar(true);
+    setProfileMessage(null);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setProfileMessage({ type: 'error', text: 'Session expired. Please sign in again.' });
+        setIsUploadingAvatar(false);
+        return;
+      }
+
+      const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const filePath = `avatar_${userId}_${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('memory-images')
+        .upload(filePath, file, {
+          contentType: file.type,
+          cacheControl: '3600',
+          upsert: true,
+        });
+
+      if (uploadError) {
+        console.error('Avatar upload error:', uploadError);
+        throw uploadError;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('memory-images')
+        .getPublicUrl(filePath);
+
+      const { error: authError } = await supabase.auth.updateUser({
+        data: { avatar_url: publicUrl }
+      });
+
+      if (authError) throw authError;
+
+      setAvatarUrl(publicUrl);
+      setProfileMessage({ type: 'success', text: '✨ Profile picture updated successfully!' });
+      setTimeout(() => setProfileMessage(null), 3000);
+    } catch (err: any) {
+      console.error('Avatar upload error:', err);
+      setProfileMessage({ type: 'error', text: err.message || 'Failed to upload profile picture.' });
+    } finally {
+      setIsUploadingAvatar(false);
+      if (avatarInputRef.current) avatarInputRef.current.value = '';
     }
   };
 
@@ -905,9 +978,18 @@ export default function Workspace() {
           {userEmail && (
             <button 
               onClick={handleOpenProfile}
-              className="flex items-center gap-1.5 text-xs text-espresso bg-paper hover:bg-paper px-3 py-1 rounded-full border border-blush/35 transition-all hover:scale-105 active:scale-95 cursor-pointer font-bold shadow-sm"
+              className="flex items-center gap-2 text-xs text-espresso bg-paper hover:bg-paper px-3 py-1 rounded-full border border-blush/35 transition-all hover:scale-105 active:scale-95 cursor-pointer font-bold shadow-sm animate-fade-in"
             >
-              <User className="w-3 h-3 text-espresso/80 font-extrabold" />
+              {avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img 
+                  src={avatarUrl} 
+                  alt="avatar" 
+                  className="w-4 h-4 rounded-full object-cover border border-blush/40"
+                />
+              ) : (
+                <User className="w-3 h-3 text-espresso/80 font-extrabold" />
+              )}
               <span>{displayName}</span>
             </button>
           )}
@@ -1631,10 +1713,48 @@ export default function Workspace() {
 
               <div className="flex flex-col items-center text-center mt-4 space-y-4">
                 
-                {/* Decorative Avatar / Monogram */}
-                <div className="w-20 h-20 bg-gradient-to-tr from-blush via-lavender/40 to-sage/30 rounded-full flex items-center justify-center shadow-inner relative border border-blush/25">
-                  <User className="w-10 h-10 text-espresso/60" />
+                {/* Interactive Avatar Upload */}
+                <div className="relative group">
+                  <div className="w-20 h-20 bg-gradient-to-tr from-blush via-lavender/40 to-sage/30 rounded-full flex items-center justify-center shadow-inner relative border border-blush/25 overflow-hidden">
+                    {avatarUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img 
+                        src={avatarUrl} 
+                        alt="User Profile" 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <User className="w-10 h-10 text-espresso/60" />
+                    )}
+                  </div>
+                  
+                  {/* Overlay camera button on hover */}
+                  <button
+                    type="button"
+                    onClick={() => avatarInputRef.current?.click()}
+                    disabled={isUploadingAvatar}
+                    className="absolute inset-0 bg-espresso/60 rounded-full opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-opacity duration-200 cursor-pointer text-white text-[9px] font-bold p-1 leading-snug"
+                    title="Change Profile Picture"
+                  >
+                    {isUploadingAvatar ? (
+                      <Loader2 className="w-5 h-5 text-white animate-spin" />
+                    ) : (
+                      <>
+                        <Camera className="w-4 h-4 mb-0.5 text-white" />
+                        <span>Change</span>
+                      </>
+                    )}
+                  </button>
                 </div>
+
+                {/* Hidden File Input for Avatar Upload */}
+                <input
+                  ref={avatarInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  onChange={handleUploadAvatar}
+                  className="hidden"
+                />
 
                 <div className="space-y-1.5 w-full px-4">
                   {isEditingName ? (
