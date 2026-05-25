@@ -59,6 +59,47 @@ interface MemoryLocation {
   lng: number; // X coordinate on SVG Map (0 - 100)
 }
 
+// Sticker Pack Interface
+interface StickerPack {
+  name: string;
+  icon: string;
+  stickers: string[];
+}
+
+// Defined 6 Packs with 6 Cute Stickers in each
+const STICKER_PACKS: StickerPack[] = [
+  {
+    name: 'Cozy Café',
+    icon: '☕',
+    stickers: ['stk_p1_1', 'stk_p1_2', 'stk_p1_3', 'stk_p1_4', 'stk_p1_5', 'stk_p1_6']
+  },
+  {
+    name: 'Cute Ghosts',
+    icon: '👻',
+    stickers: ['stk_p2_1', 'stk_p2_2', 'stk_p2_3', 'stk_p2_4', 'stk_p2_5', 'stk_p2_6']
+  },
+  {
+    name: 'Sweet Hearts',
+    icon: '💝',
+    stickers: ['stk_p3_1', 'stk_p3_2', 'stk_p3_3', 'stk_p3_4', 'stk_p3_5', 'stk_p3_6']
+  },
+  {
+    name: 'Retro Pets',
+    icon: '📷',
+    stickers: ['stk_p4_1', 'stk_p4_2', 'stk_p4_3', 'stk_p4_4', 'stk_p4_5', 'stk_p4_6']
+  },
+  {
+    name: 'Floral Garden',
+    icon: '🌸',
+    stickers: ['stk_p5_1', 'stk_p5_2', 'stk_p5_3', 'stk_p5_4', 'stk_p5_5', 'stk_p5_6']
+  },
+  {
+    name: 'Dreamy Bows',
+    icon: '🎀',
+    stickers: ['stk_p6_1', 'stk_p6_2', 'stk_p6_3', 'stk_p6_4', 'stk_p6_5', 'stk_p6_6']
+  }
+];
+
 export default function Workspace() {
   const router = useRouter();
   
@@ -112,7 +153,8 @@ export default function Workspace() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [entryCount, setEntryCount] = useState(0);
-  
+  const [activePackIndex, setActivePackIndex] = useState(0);
+
   // Profile editing states
   const [isEditingName, setIsEditingName] = useState(false);
   const [tempName, setTempName] = useState('');
@@ -124,24 +166,70 @@ export default function Workspace() {
 
   const moods = ['🌸', '☀️', '☁️', '🍂', '🎀', '🧸'];
   
-  // Image-based aesthetic sticker set (3 sheets × 4 stickers each = 12 total)
-  // Each entry: id used as the sticker "emoji" field, src = sheet path, pos = crop position
-  const stickerOptions: { id: string; label: string; src: string; pos: string }[] = [
-    // Sheet 1: Camera, Bow, Daisy, Evil Eye
+  // Image-based aesthetic sticker set (3 sheets × 4 stickers each = 12 total, plus 6 packs × 6 stickers = 36 new)
+  // Each entry: id used as the sticker "emoji" field, src = sheet path, pos = crop position, size = backgroundSize scale
+  const stickerOptions: { id: string; label: string; src: string; pos: string; size?: string }[] = [
+    // Original 12 stickers (for full backward compatibility)
     { id: 'stk_camera',   label: 'Camera',   src: '/stickers/set1.png', pos: '0% 0%' },
     { id: 'stk_bow',      label: 'Bow',      src: '/stickers/set1.png', pos: '100% 0%' },
     { id: 'stk_daisy',    label: 'Daisy',    src: '/stickers/set1.png', pos: '0% 100%' },
     { id: 'stk_evileye',  label: 'Evil Eye', src: '/stickers/set1.png', pos: '100% 100%' },
-    // Sheet 2: Coffee, Flamingo, Heart, Smiley
     { id: 'stk_coffee',   label: 'Coffee',   src: '/stickers/set2.png', pos: '0% 0%' },
     { id: 'stk_flamingo', label: 'Flamingo', src: '/stickers/set2.png', pos: '100% 0%' },
     { id: 'stk_heart',    label: 'Heart',    src: '/stickers/set2.png', pos: '0% 100%' },
     { id: 'stk_smiley',   label: 'Smiley',   src: '/stickers/set2.png', pos: '100% 100%' },
-    // Sheet 3: Panda, Books, Butterfly, Lavender
     { id: 'stk_panda',    label: 'Panda',    src: '/stickers/set3.png', pos: '0% 0%' },
     { id: 'stk_books',    label: 'Books',    src: '/stickers/set3.png', pos: '100% 0%' },
     { id: 'stk_butterfly',label: 'Butterfly',src: '/stickers/set3.png', pos: '0% 100%' },
     { id: 'stk_lavender', label: 'Lavender', src: '/stickers/set3.png', pos: '100% 100%' },
+
+    // Pack 1: Cozy Café
+    { id: 'stk_p1_1', label: 'Boba Bear',     src: '/stickers/cropped/pack1_s1.png', pos: 'center', size: 'contain' },
+    { id: 'stk_p1_2', label: 'Reading Bunny', src: '/stickers/cropped/pack1_s2.png', pos: 'center', size: 'contain' },
+    { id: 'stk_p1_3', label: 'Croissant Bear',src: '/stickers/cropped/pack1_s3.png', pos: 'center', size: 'contain' },
+    { id: 'stk_p1_4', label: 'Candle Bunny',  src: '/stickers/cropped/pack1_s4.png', pos: 'center', size: 'contain' },
+    { id: 'stk_p1_5', label: 'Cake Bear',     src: '/stickers/cropped/pack1_s5.png', pos: 'center', size: 'contain' },
+    { id: 'stk_p1_6', label: 'Coffee Cat',    src: '/stickers/cropped/pack1_s6.png', pos: 'center', size: 'contain' },
+
+    // Pack 2: Cute Ghosts
+    { id: 'stk_p2_1', label: 'Music Ghost',   src: '/stickers/cropped/pack2_s1.png', pos: 'center', size: 'contain' },
+    { id: 'stk_p2_2', label: 'Icecream Ghost',src: '/stickers/cropped/pack2_s2.png', pos: 'center', size: 'contain' },
+    { id: 'stk_p2_3', label: 'Heart Ghost',   src: '/stickers/cropped/pack2_s3.png', pos: 'center', size: 'contain' },
+    { id: 'stk_p2_4', label: 'Watering Ghost',src: '/stickers/cropped/pack2_s4.png', pos: 'center', size: 'contain' },
+    { id: 'stk_p2_5', label: 'Kitten Ghost',  src: '/stickers/cropped/pack2_s5.png', pos: 'center', size: 'contain' },
+    { id: 'stk_p2_6', label: 'Balloon Ghost', src: '/stickers/cropped/pack2_s6.png', pos: 'center', size: 'contain' },
+
+    // Pack 3: Sweet Hearts
+    { id: 'stk_p3_1', label: 'Heart Bear',    src: '/stickers/cropped/pack3_s1.png', pos: 'center', size: 'contain' },
+    { id: 'stk_p3_2', label: 'Letter Kitty',  src: '/stickers/cropped/pack3_s2.png', pos: 'center', size: 'contain' },
+    { id: 'stk_p3_3', label: 'Balloon Bunny', src: '/stickers/cropped/pack3_s3.png', pos: 'center', size: 'contain' },
+    { id: 'stk_p3_4', label: 'Sweet Kitten',  src: '/stickers/cropped/pack3_s4.png', pos: 'center', size: 'contain' },
+    { id: 'stk_p3_5', label: 'Creamy Cow',    src: '/stickers/cropped/pack3_s5.png', pos: 'center', size: 'contain' },
+    { id: 'stk_p3_6', label: 'Sweet Bunny',   src: '/stickers/cropped/pack3_s6.png', pos: 'center', size: 'contain' },
+
+    // Pack 4: Retro Pets
+    { id: 'stk_p4_1', label: 'Camera Panda',  src: '/stickers/cropped/pack4_s1.png', pos: 'center', size: 'contain' },
+    { id: 'stk_p4_2', label: 'DJ Kitty',      src: '/stickers/cropped/pack4_s2.png', pos: 'center', size: 'contain' },
+    { id: 'stk_p4_3', label: 'Artist Bear',   src: '/stickers/cropped/pack4_s3.png', pos: 'center', size: 'contain' },
+    { id: 'stk_p4_4', label: 'Film Pup',      src: '/stickers/cropped/pack4_s4.png', pos: 'center', size: 'contain' },
+    { id: 'stk_p4_5', label: 'Cassette Pig',  src: '/stickers/cropped/pack4_s5.png', pos: 'center', size: 'contain' },
+    { id: 'stk_p4_6', label: 'Radio Hamster', src: '/stickers/cropped/pack4_s6.png', pos: 'center', size: 'contain' },
+
+    // Pack 5: Floral Garden
+    { id: 'stk_p5_1', label: 'Daisy Bunny',   src: '/stickers/cropped/pack5_s1.png', pos: 'center', size: 'contain' },
+    { id: 'stk_p5_2', label: 'Lavender Bear', src: '/stickers/cropped/pack5_s2.png', pos: 'center', size: 'contain' },
+    { id: 'stk_p5_3', label: 'Flower Chick',  src: '/stickers/cropped/pack5_s3.png', pos: 'center', size: 'contain' },
+    { id: 'stk_p5_4', label: 'Tulip Hedgehog',src: '/stickers/cropped/pack5_s4.png', pos: 'center', size: 'contain' },
+    { id: 'stk_p5_5', label: 'Leafy Bunny',   src: '/stickers/cropped/pack5_s5.png', pos: 'center', size: 'contain' },
+    { id: 'stk_p5_6', label: 'Garden Bear',   src: '/stickers/cropped/pack5_s6.png', pos: 'center', size: 'contain' },
+
+    // Pack 6: Dreamy Bows
+    { id: 'stk_p6_1', label: 'Teddy Bow',     src: '/stickers/cropped/pack6_s1.png', pos: 'center', size: 'contain' },
+    { id: 'stk_p6_2', label: 'Butterfly Kitty',src: '/stickers/cropped/pack6_s2.png', pos: 'center', size: 'contain' },
+    { id: 'stk_p6_3', label: 'Star Puppy',    src: '/stickers/cropped/pack6_s3.png', pos: 'center', size: 'contain' },
+    { id: 'stk_p6_4', label: 'Wand Bunny',    src: '/stickers/cropped/pack6_s4.png', pos: 'center', size: 'contain' },
+    { id: 'stk_p6_5', label: 'Cloud Kitty',   src: '/stickers/cropped/pack6_s5.png', pos: 'center', size: 'contain' },
+    { id: 'stk_p6_6', label: 'Dreamy Bear',   src: '/stickers/cropped/pack6_s6.png', pos: 'center', size: 'contain' }
   ];
 
   // Helper: get sticker image props from its id
@@ -1205,10 +1293,10 @@ export default function Workspace() {
                               return img ? (
                                 <div
                                   style={{
-                                    width: '56px',
-                                    height: '56px',
+                                    width: img.size ? '64px' : '56px',
+                                    height: img.size ? '64px' : '56px',
                                     backgroundImage: `url(${img.src})`,
-                                    backgroundSize: '200% 200%',
+                                    backgroundSize: img.size || '200% 200%',
                                     backgroundPosition: img.pos,
                                     backgroundRepeat: 'no-repeat',
                                     filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))',
@@ -1218,8 +1306,7 @@ export default function Workspace() {
                                 <span style={{ fontSize: '1.8rem' }}>{sticker.emoji}</span>
                               );
                             })()}
-                            
-                            {/* Draggable Rotation / Scale / Delete Modifiers capsule overlay */}
+
                             {isActive && (
                               <div 
                                 className="absolute -bottom-10 left-1/2 -translate-x-1/2 flex items-center bg-espresso/90 border border-blush/20 backdrop-blur-md rounded-full px-2.5 py-1 text-white gap-2.5 shadow-xl z-50 pointer-events-auto"
@@ -1269,7 +1356,6 @@ export default function Workspace() {
                     </AnimatePresence>
                   </div>
 
-                  {/* Soft decorative binding ring holes to feel tactile like real paper */}
                   <div className="absolute left-4 top-0 bottom-0 flex flex-col justify-around py-12 pointer-events-none z-0">
                     {[...Array(6)].map((_, i) => (
                       <div key={i} className="w-2.5 h-2.5 bg-canvas border border-blush/30 rounded-full shadow-inner" />
@@ -1429,26 +1515,52 @@ export default function Workspace() {
                   </button>
                 </div>
 
-                <div className='grid grid-cols-4 gap-2 pt-1'>
-                  {stickerOptions.map((sticker) => (
-                    <button
-                      key={sticker.id}
-                      onClick={() => handleAddSticker(sticker.id)}
-                      title={sticker.label}
-                      className='aspect-square rounded-xl hover:bg-canvas transition-all active:scale-90 cursor-pointer hover:rotate-3 flex items-center justify-center overflow-hidden border border-blush/20 hover:border-lavender hover:shadow-sm'
-                    >
-                      <div
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          backgroundImage: `url(${sticker.src})`,
-                          backgroundSize: '200% 200%',
-                          backgroundPosition: sticker.pos,
-                          backgroundRepeat: 'no-repeat',
-                        }}
-                      />
-                    </button>
-                  ))}
+                {/* Pack Selection Tabs */}
+                <div className="flex gap-1.5 overflow-x-auto pb-1.5 scrollbar-none snap-x border-b border-canvas/40">
+                  {STICKER_PACKS.map((pack, idx) => {
+                    const isActive = activePackIndex === idx;
+                    return (
+                      <button
+                        key={pack.name}
+                        onClick={() => setActivePackIndex(idx)}
+                        className={`flex items-center gap-1 px-2.5 py-1 text-[10px] font-extrabold rounded-full border transition-all cursor-pointer whitespace-nowrap snap-start ${
+                          isActive
+                            ? 'bg-espresso text-canvas border-espresso shadow-sm'
+                            : 'bg-paper/50 text-espresso border-blush/20 hover:border-lavender hover:bg-canvas/50'
+                        }`}
+                      >
+                        <span>{pack.icon}</span>
+                        <span>{pack.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Stickers Grid */}
+                <div className='grid grid-cols-3 gap-2 pt-1'>
+                  {STICKER_PACKS[activePackIndex].stickers.map((stickerId) => {
+                    const sticker = getStickerImage(stickerId);
+                    if (!sticker) return null;
+                    return (
+                      <button
+                        key={sticker.id}
+                        onClick={() => handleAddSticker(sticker.id)}
+                        title={sticker.label}
+                        className='aspect-square rounded-2xl bg-paper/30 hover:bg-canvas transition-all active:scale-90 cursor-pointer hover:rotate-3 flex items-center justify-center overflow-hidden border border-blush/15 hover:border-lavender hover:shadow-md'
+                      >
+                        <div
+                          style={{
+                            width: '80%',
+                            height: '80%',
+                            backgroundImage: `url(${sticker.src})`,
+                            backgroundSize: sticker.size || '200% 200%',
+                            backgroundPosition: sticker.pos,
+                            backgroundRepeat: 'no-repeat',
+                          }}
+                        />
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
