@@ -106,6 +106,10 @@ export default function Workspace() {
   // Drag constraints reference pointer
   const notebookRef = useRef<HTMLDivElement>(null);
   
+  // Rich Text Editor reference & selected inline sticker states
+  const editorRef = useRef<HTMLDivElement>(null);
+  const [selectedInlineSticker, setSelectedInlineSticker] = useState<HTMLImageElement | null>(null);
+  
   // View states: 'editor' | 'map'
   const [activeView, setActiveView] = useState<'editor' | 'map'>('editor');
   
@@ -348,6 +352,13 @@ export default function Workspace() {
     const interval = setInterval(updateClock, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  // Sync journalText state to contenteditable innerHTML when loaded or changed externally
+  useEffect(() => {
+    if (editorRef.current && editorRef.current.innerHTML !== journalText) {
+      editorRef.current.innerHTML = journalText;
+    }
+  }, [journalText]);
 
   // WebAuthn API fingerprint/FaceID locks implementation
   const triggerBiometricAuth = async () => {
@@ -813,8 +824,9 @@ export default function Workspace() {
 
   // Placed sticker modifier handlers
   const handleAddSticker = (emoji: string) => {
+    const stickerId = Math.random().toString(36).substring(2, 9);
     const newSticker: PlacedSticker = {
-      id: Math.random().toString(36).substring(2, 9),
+      id: stickerId,
       type: 'emoji',
       emoji,
       x: 50,
@@ -823,6 +835,7 @@ export default function Workspace() {
       scale: 1.0
     };
     setStickers(prev => [...prev, newSticker]);
+    setActiveStickerId(stickerId); // Auto-select on placement
   };
 
   const handleRemoveSticker = (id: string) => {
@@ -854,15 +867,27 @@ export default function Workspace() {
     setActiveStickerId(null);
   };
 
-  // Extract offset drag values, convert to relative percentage, and update coordinates state
-  const handleDragEnd = (id: string, info: any) => {
+  // Extract offset drag values, convert to relative percentage, and update coordinates state using dragged element center
+  const handleDragEnd = (id: string, event: any, info: any) => {
     if (!notebookRef.current) return;
     
-    const rect = notebookRef.current.getBoundingClientRect();
+    // Resolve target sticker container
+    let target = event.currentTarget || event.target;
+    while (target && target !== notebookRef.current && !target.style.left) {
+      target = target.parentElement;
+    }
+    if (!target) return;
     
-    // Convert client coordinates relative to container size
-    const relativeX = ((info.point.x - rect.left) / rect.width) * 100;
-    const relativeY = ((info.point.y - rect.top) / rect.height) * 100;
+    const rect = notebookRef.current.getBoundingClientRect();
+    const elemRect = target.getBoundingClientRect();
+    
+    // Find center coordinates of the sticker
+    const centerX = elemRect.left + elemRect.width / 2;
+    const centerY = elemRect.top + elemRect.height / 2;
+    
+    // Convert to relative percentage of the notebook
+    const relativeX = ((centerX - rect.left) / rect.width) * 100;
+    const relativeY = ((centerY - rect.top) / rect.height) * 100;
     
     // Keep bounded within 2% to 98% boundary limit constraints
     const clampedX = Math.max(2, Math.min(98, relativeX));
@@ -870,6 +895,43 @@ export default function Workspace() {
 
     setStickers(prev => prev.map(s => 
       s.id === id ? { ...s, x: clampedX, y: clampedY } : s
+    ));
+  };
+
+  // Teleport selected active sticker to click location (Shift+Click inside text, or normal click in margins)
+  const handlePageClick = (e: React.MouseEvent) => {
+    if (!notebookRef.current) return;
+    
+    // If no active sticker is selected, just clear selection (original behavior)
+    if (!activeStickerId) {
+      setActiveStickerId(null);
+      return;
+    }
+    
+    const target = e.target as HTMLElement;
+    
+    // Don't teleport if clicking control overlays or buttons
+    if (target.closest('.pointer-events-auto')) {
+      return;
+    }
+    
+    const isTextarea = target.tagName.toLowerCase() === 'textarea';
+    
+    // If clicking text editor normally, do not teleport (to allow typing/cursor select) unless Shift key is pressed
+    if (isTextarea && !e.shiftKey) {
+      setActiveStickerId(null);
+      return;
+    }
+    
+    const rect = notebookRef.current.getBoundingClientRect();
+    const clickX = ((e.clientX - rect.left) / rect.width) * 100;
+    const clickY = ((e.clientY - rect.top) / rect.height) * 100;
+    
+    const clampedX = Math.max(2, Math.min(98, clickX));
+    const clampedY = Math.max(2, Math.min(98, clickY));
+    
+    setStickers(prev => prev.map(s => 
+      s.id === activeStickerId ? { ...s, x: clampedX, y: clampedY } : s
     ));
   };
 
@@ -1241,7 +1303,7 @@ export default function Workspace() {
                   ref={notebookRef}
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
-                  onClick={() => setActiveStickerId(null)}
+                  onClick={handlePageClick}
                   className="flex-1 bg-paper rounded-3xl shadow-xl shadow-espresso/[0.02] p-6 flex flex-col relative min-h-[500px] overflow-hidden"
                   style={{
                     borderWidth: '1.5px',
@@ -1258,12 +1320,12 @@ export default function Workspace() {
                         const isActive = activeStickerId === sticker.id;
                         return (
                           <motion.div
-                            key={sticker.id}
+                            key={`${sticker.id}-${sticker.x}-${sticker.y}`}
                             drag
                             dragConstraints={notebookRef}
                             dragElastic={0.02}
                             dragMomentum={false}
-                            onDragEnd={(event, info) => handleDragEnd(sticker.id, info)}
+                            onDragEnd={(event, info) => handleDragEnd(sticker.id, event, info)}
                             onClick={(e) => {
                               e.stopPropagation();
                               setActiveStickerId(isActive ? null : sticker.id);
@@ -1494,7 +1556,7 @@ export default function Workspace() {
                   <span>Scrapbook Sticker Drawer</span>
                 </div>
                 <p className='text-[10px] text-espresso/80 leading-relaxed font-semibold'>
-                  Click a sticker to place it, then drag it anywhere! Click to select and click (✕) to delete.
+                  Click a sticker to place, then drag it anywhere. <b>Tip:</b> Click a sticker to select it, then click page margins (or <b>Shift + Click</b> inside the text) to teleport it exactly there!
                 </p>
                 
                 {/* Draggable controls (Undo / Clear) */}
