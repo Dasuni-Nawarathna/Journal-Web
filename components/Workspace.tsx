@@ -38,7 +38,10 @@ import {
   Globe,
   Compass,
   Camera,
-  Loader2
+  Loader2,
+  AlignLeft,
+  AlignRight,
+  AlignCenter
 } from 'lucide-react';
 
 // Sticker Data Model Spec
@@ -364,8 +367,11 @@ export default function Workspace() {
   const triggerBiometricAuth = async () => {
     setBiometricStatus('scanning');
     
+    const isLocalhost = typeof window !== 'undefined' && 
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    
     // Check if biometric credential verification is supported
-    if (typeof window !== 'undefined' && window.PublicKeyCredential && navigator.credentials) {
+    if (!isLocalhost && typeof window !== 'undefined' && window.PublicKeyCredential && navigator.credentials) {
       try {
         // Setup challenge for actual WebAuthn credential retrieval
         const challenge = new Uint8Array(32);
@@ -501,6 +507,9 @@ export default function Workspace() {
       // Decrypt journal content
       const decrypted = decryptData(foundEntry.content, uid);
       setJournalText(decrypted || '');
+      if (editorRef.current) {
+        editorRef.current.innerHTML = decrypted || '';
+      }
       
       // Fetch stickers linked to this journal entry
       await fetchStickersForEntry(foundEntry.id);
@@ -509,6 +518,9 @@ export default function Workspace() {
       setLoadedEntryId(null);
       setTitle('');
       setJournalText('');
+      if (editorRef.current) {
+        editorRef.current.innerHTML = '';
+      }
       setSelectedMood('🌸');
       setStickers([]);
       setLocationName('');
@@ -670,7 +682,8 @@ export default function Workspace() {
 
   // Save or Update entry in your live Postgres Database (with nested sticker & locations synchronization)
   const handleSavePage = async () => {
-    if (!journalText.trim()) {
+    const plainText = editorRef.current ? editorRef.current.innerText : journalText;
+    if (!plainText.trim()) {
       setSaveStatus({ type: 'error', text: '🍉 The page is completely empty! Write down a thought first.' });
       return;
     }
@@ -684,7 +697,8 @@ export default function Workspace() {
     setSaveStatus(null);
 
     try {
-      const encryptedContent = encryptData(journalText, userId);
+      const currentHTML = editorRef.current ? editorRef.current.innerHTML : journalText;
+      const encryptedContent = encryptData(currentHTML, userId);
       const entryDateStr = formatDateString(selectedDate);
       let entryId = loadedEntryId;
 
@@ -796,6 +810,9 @@ export default function Workspace() {
       setLoadedEntryId(null);
       setTitle('');
       setJournalText('');
+      if (editorRef.current) {
+        editorRef.current.innerHTML = '';
+      }
       setSelectedMood('🌸');
       setStickers([]);
       setLocationName('');
@@ -915,10 +932,10 @@ export default function Workspace() {
       return;
     }
     
-    const isTextarea = target.tagName.toLowerCase() === 'textarea';
+    const isTextEditor = target.tagName.toLowerCase() === 'textarea' || target.closest('.journal-editor') !== null;
     
     // If clicking text editor normally, do not teleport (to allow typing/cursor select) unless Shift key is pressed
-    if (isTextarea && !e.shiftKey) {
+    if (isTextEditor && !e.shiftKey) {
       setActiveStickerId(null);
       return;
     }
@@ -933,6 +950,189 @@ export default function Workspace() {
     setStickers(prev => prev.map(s => 
       s.id === activeStickerId ? { ...s, x: clampedX, y: clampedY } : s
     ));
+  };
+
+  // Inserts a sticker as an inline-block image element inside the contenteditable editor
+  const insertInlineSticker = (emojiId: string) => {
+    console.log('insertInlineSticker called for:', emojiId);
+    const sticker = getStickerImage(emojiId);
+    if (!sticker) {
+      console.log('insertInlineSticker error: sticker not found for', emojiId);
+      return;
+    }
+    
+    const editor = editorRef.current;
+    if (!editor) {
+      console.log('insertInlineSticker error: editorRef.current is null');
+      return;
+    }
+    
+    // Create image element
+    const img = document.createElement('img');
+    img.src = sticker.src;
+    img.alt = sticker.label;
+    img.className = 'inline-sticker';
+    img.style.width = '64px';
+    img.style.height = '64px';
+    img.style.float = 'right';
+    img.style.margin = '4px 0 4px 12px';
+    img.style.cursor = 'pointer';
+    img.style.userSelect = 'none';
+    img.setAttribute('data-sticker-id', emojiId);
+    img.setAttribute('data-rotation', '0');
+    img.setAttribute('data-scale', '1.0');
+    img.setAttribute('data-float', 'right');
+    
+    editor.focus();
+    
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      console.log('insertInlineSticker: found selection range. commonAncestor:', range.commonAncestorContainer);
+      
+      // Make sure the range selection cursor is actually inside the editor container
+      if (editor.contains(range.commonAncestorContainer)) {
+        console.log('insertInlineSticker: inserting inline at caret selection');
+        range.deleteContents();
+        range.insertNode(img);
+        
+        // Add a non-breaking space after the image so typing continues cleanly after it
+        const space = document.createTextNode('\u00A0');
+        range.setStartAfter(img);
+        range.insertNode(space);
+        
+        // Move caret cursor after the space
+        range.setStartAfter(space);
+        range.setEndAfter(space);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        
+        setJournalText(editor.innerHTML);
+        console.log('insertInlineSticker: finished inline insertion, innerHTML:', editor.innerHTML);
+        return;
+      } else {
+        console.log('insertInlineSticker: range commonAncestor is not inside editor');
+      }
+    } else {
+      console.log('insertInlineSticker: no selection or rangeCount <= 0');
+    }
+    
+    // Fallback: append at the very end if editor not focused
+    console.log('insertInlineSticker: using fallback append at end');
+    editor.appendChild(img);
+    const space = document.createTextNode('\u00A0');
+    editor.appendChild(space);
+    
+    const range = document.createRange();
+    range.selectNodeContents(editor);
+    range.collapse(false);
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+    
+    setJournalText(editor.innerHTML);
+    console.log('insertInlineSticker: finished fallback insertion, innerHTML:', editor.innerHTML);
+  };
+
+  // Handle editor clicks to check if an inline sticker was selected
+  const handleEditorClick = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    
+    // Reset previous selection styles if any
+    if (selectedInlineSticker) {
+      selectedInlineSticker.style.outline = 'none';
+      selectedInlineSticker.style.boxShadow = 'none';
+    }
+    
+    if (target.tagName.toLowerCase() === 'img' && target.classList.contains('inline-sticker')) {
+      const img = target as HTMLImageElement;
+      setSelectedInlineSticker(img);
+      img.style.outline = '2px solid var(--color-lavender, #C4B5FD)';
+      img.style.outlineOffset = '2px';
+      img.style.borderRadius = '8px';
+      img.style.boxShadow = '0 0 8px rgba(196, 181, 254, 0.4)';
+    } else {
+      setSelectedInlineSticker(null);
+    }
+  };
+
+  // Modify selected inline sticker rotation
+  const handleRotateInlineSticker = (degrees: number) => {
+    if (!selectedInlineSticker) return;
+    
+    let rotation = parseInt(selectedInlineSticker.getAttribute('data-rotation') || '0');
+    rotation = (rotation + degrees) % 360;
+    selectedInlineSticker.setAttribute('data-rotation', rotation.toString());
+    
+    let scale = parseFloat(selectedInlineSticker.getAttribute('data-scale') || '1.0');
+    selectedInlineSticker.style.transform = `rotate(${rotation}deg) scale(${scale})`;
+    
+    if (editorRef.current) setJournalText(editorRef.current.innerHTML);
+  };
+
+  // Modify selected inline sticker scale
+  const handleScaleInlineSticker = (factor: number) => {
+    if (!selectedInlineSticker) return;
+    
+    let scale = parseFloat(selectedInlineSticker.getAttribute('data-scale') || '1.0');
+    scale = Math.max(0.5, Math.min(2.0, scale + factor));
+    selectedInlineSticker.setAttribute('data-scale', scale.toString());
+    
+    let rotation = parseInt(selectedInlineSticker.getAttribute('data-rotation') || '0');
+    selectedInlineSticker.style.transform = `rotate(${rotation}deg) scale(${scale})`;
+    
+    if (editorRef.current) setJournalText(editorRef.current.innerHTML);
+  };
+
+  // Modify selected inline sticker float alignment and margins
+  const handleFloatInlineSticker = (floatType: 'left' | 'right' | 'none') => {
+    if (!selectedInlineSticker) return;
+    
+    if (floatType === 'none') {
+      selectedInlineSticker.style.float = 'none';
+      selectedInlineSticker.style.display = 'inline-block';
+      selectedInlineSticker.style.verticalAlign = 'middle';
+      selectedInlineSticker.style.margin = '4px 8px';
+      selectedInlineSticker.setAttribute('data-float', 'none');
+    } else if (floatType === 'left') {
+      selectedInlineSticker.style.float = 'left';
+      selectedInlineSticker.style.display = 'inline-block';
+      selectedInlineSticker.style.margin = '4px 12px 4px 0';
+      selectedInlineSticker.setAttribute('data-float', 'left');
+    } else if (floatType === 'right') {
+      selectedInlineSticker.style.float = 'right';
+      selectedInlineSticker.style.display = 'inline-block';
+      selectedInlineSticker.style.margin = '4px 0 4px 12px';
+      selectedInlineSticker.setAttribute('data-float', 'right');
+    }
+    
+    if (editorRef.current) setJournalText(editorRef.current.innerHTML);
+  };
+
+  // Delete selected inline sticker
+  const handleRemoveInlineSticker = () => {
+    if (!selectedInlineSticker) return;
+    selectedInlineSticker.remove();
+    setSelectedInlineSticker(null);
+    
+    if (editorRef.current) setJournalText(editorRef.current.innerHTML);
+  };
+
+  // Helper to calculate position for popover controls below selected inline sticker
+  const getPopoverStyle = (): React.CSSProperties => {
+    if (!selectedInlineSticker || !notebookRef.current) return { display: 'none' };
+    const rect = selectedInlineSticker.getBoundingClientRect();
+    const containerRect = notebookRef.current.getBoundingClientRect();
+    
+    const left = rect.left + rect.width / 2 - containerRect.left;
+    const top = rect.bottom - containerRect.top + 8;
+    
+    return {
+      position: 'absolute',
+      left: `${left}px`,
+      top: `${top}px`,
+      transform: 'translateX(-50%)',
+      zIndex: 50
+    };
   };
 
   // Module A: Local decryption loop helper for rendering clear previews of entries
@@ -1418,6 +1618,74 @@ export default function Workspace() {
                     </AnimatePresence>
                   </div>
 
+                  {/* Inline Sticker Controls Popover */}
+                  {selectedInlineSticker && (
+                    <div 
+                      style={getPopoverStyle()}
+                      className="flex items-center bg-espresso/90 border border-blush/20 backdrop-blur-md rounded-full px-2.5 py-1 text-white gap-2.5 shadow-xl z-50 pointer-events-auto"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <button
+                        onClick={() => handleRotateInlineSticker(-15)}
+                        className="hover:text-blush transition-colors cursor-pointer"
+                        title="Rotate Left"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleRotateInlineSticker(15)}
+                        className="hover:text-blush transition-colors cursor-pointer"
+                        title="Rotate Right"
+                      >
+                        <RotateCw className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleScaleInlineSticker(-0.1)}
+                        className="hover:text-blush transition-colors cursor-pointer"
+                        title="Shrink"
+                      >
+                        <Minimize2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleScaleInlineSticker(0.1)}
+                        className="hover:text-blush transition-colors cursor-pointer"
+                        title="Enlarge"
+                      >
+                        <Maximize2 className="w-3.5 h-3.5" />
+                      </button>
+                      <span className="w-[1px] h-3 bg-white/20" />
+                      <button
+                        onClick={() => handleFloatInlineSticker('left')}
+                        className={`transition-colors cursor-pointer ${selectedInlineSticker.style.float === 'left' ? 'text-blush' : 'hover:text-blush'}`}
+                        title="Float Left"
+                      >
+                        <AlignLeft className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleFloatInlineSticker('none')}
+                        className={`transition-colors cursor-pointer ${(selectedInlineSticker.style.float !== 'left' && selectedInlineSticker.style.float !== 'right') ? 'text-blush' : 'hover:text-blush'}`}
+                        title="Inline (No Float)"
+                      >
+                        <AlignCenter className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleFloatInlineSticker('right')}
+                        className={`transition-colors cursor-pointer ${selectedInlineSticker.style.float === 'right' ? 'text-blush' : 'hover:text-blush'}`}
+                        title="Float Right"
+                      >
+                        <AlignRight className="w-3.5 h-3.5" />
+                      </button>
+                      <span className="w-[1px] h-3 bg-white/20" />
+                      <button
+                        onClick={handleRemoveInlineSticker}
+                        className="text-rose-400 hover:text-rose-600 transition-colors cursor-pointer"
+                        title="Delete Sticker"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
+
                   <div className="absolute left-4 top-0 bottom-0 flex flex-col justify-around py-12 pointer-events-none z-0">
                     {[...Array(6)].map((_, i) => (
                       <div key={i} className="w-2.5 h-2.5 bg-canvas border border-blush/30 rounded-full shadow-inner" />
@@ -1469,16 +1737,39 @@ export default function Workspace() {
                     </div>
 
                     {/* Lined Writing Area */}
-                    <textarea
-                      placeholder="Pour your thoughts onto the page here..."
-                      value={journalText}
-                      onChange={(e) => setJournalText(e.target.value)}
-                      className="w-full flex-1 bg-transparent resize-none focus:outline-none text-espresso text-sm font-medium leading-8 tracking-wide placeholder:text-espresso/55 cursor-text select-text"
-                      style={{
-                        backgroundImage: 'linear-gradient(var(--paper-line-color) 1px, transparent 1px)',
-                        backgroundSize: '100% 2rem',
-                      }}
-                    />
+                    <style dangerouslySetInnerHTML={{__html: `
+                      .journal-editor div, .journal-editor p {
+                        line-height: 2rem;
+                        margin: 0;
+                        min-height: 2rem;
+                      }
+                      .journal-editor img.inline-sticker {
+                        transition: transform 0.1s ease;
+                        max-width: 100%;
+                      }
+                    `}} />
+                    
+                    <div className="relative flex-1 flex flex-col min-h-[400px]">
+                      {(!journalText || journalText === '<br>' || journalText === '<div><br></div>') && (
+                        <div className="absolute left-0 top-[0.6rem] text-espresso/55 text-sm font-medium pointer-events-none select-none">
+                          Pour your thoughts onto the page here...
+                        </div>
+                      )}
+                      <div
+                        ref={editorRef}
+                        contentEditable
+                        onInput={(e) => setJournalText(e.currentTarget.innerHTML)}
+                        onBlur={() => {
+                          if (editorRef.current) setJournalText(editorRef.current.innerHTML);
+                        }}
+                        onClick={handleEditorClick}
+                        className="w-full flex-1 bg-transparent focus:outline-none text-espresso text-sm font-medium leading-8 tracking-wide cursor-text select-text overflow-y-auto whitespace-pre-wrap break-words outline-none journal-editor min-h-[400px]"
+                        style={{
+                          backgroundImage: 'linear-gradient(var(--paper-line-color) 1px, transparent 1px)',
+                          backgroundSize: '100% 2rem',
+                        }}
+                      />
+                    </div>
                   </div>
 
                   {/* Google Maps Location Picker */}
@@ -1556,7 +1847,7 @@ export default function Workspace() {
                   <span>Scrapbook Sticker Drawer</span>
                 </div>
                 <p className='text-[10px] text-espresso/80 leading-relaxed font-semibold'>
-                  Click a sticker to place, then drag it anywhere. <b>Tip:</b> Click a sticker to select it, then click page margins (or <b>Shift + Click</b> inside the text) to teleport it exactly there!
+                  Click a sticker to insert it exactly at your typing cursor! Click any placed sticker to scale, rotate, or delete it, and continue writing right after it!
                 </p>
                 
                 {/* Draggable controls (Undo / Clear) */}
@@ -1606,7 +1897,7 @@ export default function Workspace() {
                     return (
                       <button
                         key={sticker.id}
-                        onClick={() => handleAddSticker(sticker.id)}
+                        onClick={() => insertInlineSticker(sticker.id)}
                         title={sticker.label}
                         className='aspect-square rounded-2xl bg-paper/30 hover:bg-canvas transition-all active:scale-90 cursor-pointer hover:rotate-3 flex items-center justify-center overflow-hidden border border-blush/15 hover:border-lavender hover:shadow-md'
                       >
