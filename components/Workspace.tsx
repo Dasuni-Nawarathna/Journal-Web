@@ -977,7 +977,7 @@ export default function Workspace() {
     img.style.float = 'right';
     img.style.margin = '4px 0 4px 12px';
     img.style.cursor = 'pointer';
-    img.style.userSelect = 'none';
+    img.style.userSelect = 'auto';
     img.setAttribute('data-sticker-id', emojiId);
     img.setAttribute('data-rotation', '0');
     img.setAttribute('data-scale', '1.0');
@@ -1033,27 +1033,79 @@ export default function Workspace() {
     console.log('insertInlineSticker: finished fallback insertion, innerHTML:', editor.innerHTML);
   };
 
-  // Handle editor clicks to check if an inline sticker was selected
-  const handleEditorClick = (e: React.MouseEvent) => {
-    const target = e.target as HTMLElement;
-    
-    // Reset previous selection styles if any
-    if (selectedInlineSticker) {
-      selectedInlineSticker.style.outline = 'none';
-      selectedInlineSticker.style.boxShadow = 'none';
-    }
-    
-    if (target.tagName.toLowerCase() === 'img' && target.classList.contains('inline-sticker')) {
-      const img = target as HTMLImageElement;
-      setSelectedInlineSticker(img);
-      img.style.outline = '2px solid var(--color-lavender, #C4B5FD)';
-      img.style.outlineOffset = '2px';
-      img.style.borderRadius = '8px';
-      img.style.boxShadow = '0 0 8px rgba(196, 181, 254, 0.4)';
-    } else {
-      setSelectedInlineSticker(null);
-    }
-  };
+  // Capture-phase document click listener to select/deselect inline stickers
+  useEffect(() => {
+    const handleStickerClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+
+      // If clicking inside the popover controls or a button, don't clear selection
+      if (target.closest('.pointer-events-auto') || target.closest('button')) {
+        return;
+      }
+
+      // Check if click target is an inline sticker
+      if (target.tagName.toLowerCase() === 'img' && target.classList.contains('inline-sticker')) {
+        const img = target as HTMLImageElement;
+        
+        // Reset previous outline if selecting a different one
+        if (selectedInlineSticker && selectedInlineSticker !== img) {
+          selectedInlineSticker.style.outline = 'none';
+          selectedInlineSticker.style.boxShadow = 'none';
+        }
+
+        setSelectedInlineSticker(img);
+        img.style.outline = '2px solid var(--color-lavender, #C4B5FD)';
+        img.style.outlineOffset = '2px';
+        img.style.borderRadius = '8px';
+        img.style.boxShadow = '0 0 8px rgba(196, 181, 254, 0.4)';
+        e.preventDefault();
+        e.stopPropagation();
+      } else {
+        // Clicked elsewhere, clear selection
+        if (selectedInlineSticker) {
+          selectedInlineSticker.style.outline = 'none';
+          selectedInlineSticker.style.boxShadow = 'none';
+          setSelectedInlineSticker(null);
+        }
+      }
+    };
+
+    document.addEventListener('click', handleStickerClick, true);
+    return () => {
+      document.removeEventListener('click', handleStickerClick, true);
+    };
+  }, [selectedInlineSticker]);
+
+  // Keydown listener to delete the selected inline sticker with Backspace or Delete keys
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (selectedInlineSticker && (e.key === 'Backspace' || e.key === 'Delete')) {
+        e.preventDefault();
+        handleRemoveInlineSticker();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [selectedInlineSticker]);
+
+  // Drop event listener to auto-save HTML after inline sticker is dragged and dropped inside the editor
+  useEffect(() => {
+    const editor = editorRef.current;
+    if (!editor) return;
+
+    const handleDrop = () => {
+      setTimeout(() => {
+        if (editorRef.current) setJournalText(editorRef.current.innerHTML);
+      }, 50);
+    };
+
+    editor.addEventListener('drop', handleDrop);
+    return () => {
+      editor.removeEventListener('drop', handleDrop);
+    };
+  }, [editorRef.current]);
 
   // Modify selected inline sticker rotation
   const handleRotateInlineSticker = (degrees: number) => {
@@ -1520,7 +1572,7 @@ export default function Workspace() {
                         const isActive = activeStickerId === sticker.id;
                         return (
                           <motion.div
-                            key={`${sticker.id}-${sticker.x}-${sticker.y}`}
+                            key={sticker.id}
                             drag
                             dragConstraints={notebookRef}
                             dragElastic={0.02}
@@ -1552,19 +1604,23 @@ export default function Workspace() {
                             {/* Render image sticker or fallback to emoji */}
                             {(() => {
                               const img = getStickerImage(sticker.emoji);
-                              return img ? (
-                                <div
-                                  style={{
-                                    width: img.size ? '64px' : '56px',
-                                    height: img.size ? '64px' : '56px',
-                                    backgroundImage: `url(${img.src})`,
-                                    backgroundSize: img.size || '200% 200%',
-                                    backgroundPosition: img.pos,
-                                    backgroundRepeat: 'no-repeat',
-                                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))',
-                                  }}
-                                />
-                              ) : (
+                              if (img) {
+                                return (
+                                  <div
+                                    style={{
+                                      width: img.size ? '64px' : '56px',
+                                      height: img.size ? '64px' : '56px',
+                                      backgroundImage: `url(${img.src})`,
+                                      backgroundSize: img.size || '200% 200%',
+                                      backgroundPosition: img.pos,
+                                      backgroundRepeat: 'no-repeat',
+                                      filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))',
+                                    }}
+                                  />
+                                );
+                              }
+
+                              return (
                                 <span style={{ fontSize: '1.8rem' }}>{sticker.emoji}</span>
                               );
                             })()}
@@ -1762,7 +1818,6 @@ export default function Workspace() {
                         onBlur={() => {
                           if (editorRef.current) setJournalText(editorRef.current.innerHTML);
                         }}
-                        onClick={handleEditorClick}
                         className="w-full flex-1 bg-transparent focus:outline-none text-espresso text-sm font-medium leading-8 tracking-wide cursor-text select-text overflow-y-auto whitespace-pre-wrap break-words outline-none journal-editor min-h-[400px]"
                         style={{
                           backgroundImage: 'linear-gradient(var(--paper-line-color) 1px, transparent 1px)',
