@@ -884,6 +884,24 @@ export default function Workspace() {
     setActiveStickerId(null);
   };
 
+  const handlePhotoUploaded = (image: { url: string; path: string; name: string }) => {
+    const newPhotoSticker: PlacedSticker = {
+      id: `photo_${Date.now()}`,
+      type: 'photo',
+      emoji: image.url,
+      x: 50,
+      y: 50,
+      rotation: 0,
+      scale: 1.0
+    };
+    setStickers(prev => [...prev, newPhotoSticker]);
+    setActiveStickerId(newPhotoSticker.id);
+  };
+
+  const handlePhotoDeleted = (image: { url: string; path: string; name: string }) => {
+    setStickers(prev => prev.filter(s => s.emoji !== image.url));
+  };
+
   // Extract offset drag values, convert to relative percentage, and update coordinates state using dragged element center
   const handleDragEnd = (id: string, event: any, info: any) => {
     if (!notebookRef.current) return;
@@ -1249,6 +1267,21 @@ export default function Workspace() {
   // Filter entries that have coordinates to plot on Cozy Canvas Map
   const mapEntries = allEntries.filter(e => e.latitude !== null && e.longitude !== null);
 
+  // Extract photos from stickers state to pass to ImageUploader
+  const attachedPhotos = stickers
+    .filter(s => s.type === 'photo' || s.emoji.startsWith('http') || s.emoji.startsWith('/'))
+    .map(s => {
+      const urlParts = s.emoji.split('/');
+      const fileName = urlParts[urlParts.length - 1];
+      // Keep the clean path for deletion from storage bucket
+      // Supabase storage needs the actual relative path inside the bucket
+      return {
+        url: s.emoji,
+        path: fileName,
+        name: fileName.substring(fileName.indexOf('_') + 1) || 'photo.png'
+      };
+    });
+
   return (
     <div
       className={`min-h-screen flex flex-col font-sans relative bg-canvas transition-colors duration-700 theme-${theme}`}
@@ -1372,6 +1405,9 @@ export default function Workspace() {
             <ImageUploader
               userId={userId}
               entryId={loadedEntryId}
+              initialImages={attachedPhotos}
+              onImageUploaded={handlePhotoUploaded}
+              onImageDeleted={handlePhotoDeleted}
             />
           )}
 
@@ -1615,6 +1651,23 @@ export default function Workspace() {
                                       backgroundPosition: img.pos,
                                       backgroundRepeat: 'no-repeat',
                                       filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))',
+                                    }}
+                                  />
+                                );
+                              }
+
+                              const isPhoto = sticker.type === 'photo' || sticker.emoji.startsWith('http') || sticker.emoji.startsWith('/');
+                              if (isPhoto) {
+                                return (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img
+                                    src={sticker.emoji}
+                                    alt="Uploaded Photo"
+                                    className="rounded-2xl border border-blush/20 shadow-md object-cover select-none pointer-events-none"
+                                    style={{
+                                      width: '140px',
+                                      height: '140px',
+                                      filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.12))',
                                     }}
                                   />
                                 );
