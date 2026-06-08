@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabaseClient';
 import { ImageIcon, Upload, X, Loader2, Check, AlertCircle } from 'lucide-react';
@@ -14,14 +14,23 @@ interface UploadedImage {
 interface ImageUploaderProps {
   userId: string;
   entryId: string | null;
+  initialImages?: UploadedImage[];
   onImageUploaded?: (image: UploadedImage) => void;
+  onImageDeleted?: (image: UploadedImage) => void;
 }
 
-export default function ImageUploader({ userId, entryId, onImageUploaded }: ImageUploaderProps) {
+export default function ImageUploader({ userId, entryId, initialImages, onImageUploaded, onImageDeleted }: ImageUploaderProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
+
+  // Synchronize initial images when loaded from database
+  useEffect(() => {
+    if (initialImages) {
+      setUploadedImages(initialImages);
+    }
+  }, [initialImages]);
   const [status, setStatus] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -130,6 +139,7 @@ export default function ImageUploader({ userId, entryId, onImageUploaded }: Imag
       const { error } = await supabase.storage.from('memory-images').remove([image.path]);
       if (error) throw error;
       setUploadedImages((prev) => prev.filter((img) => img.path !== image.path));
+      onImageDeleted?.(image);
     } catch (err: any) {
       console.error('Error deleting image:', err);
       setStatus({ type: 'error', text: `Delete failed: ${err.message}` });
