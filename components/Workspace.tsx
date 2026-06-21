@@ -1212,6 +1212,17 @@ export default function Workspace() {
     if (editorRef.current) setJournalText(editorRef.current.innerHTML);
   };
 
+  // Stub handler to insert prompt into the journal text
+  const handleInsertPrompt = (promptText: string) => {
+    const editor = editorRef.current;
+    if (!editor) return;
+    
+    const promptHtml = `<blockquote>"${promptText}"</blockquote>`;
+    editor.innerHTML += promptHtml;
+    setJournalText(editor.innerHTML);
+    setShowPromptPanel(false);
+  };
+
   // Helper to calculate position for popover controls below selected inline sticker
   const getPopoverStyle = (): React.CSSProperties => {
     if (!selectedInlineSticker || !notebookRef.current) return { display: 'none' };
@@ -1899,6 +1910,62 @@ export default function Workspace() {
                       }
                     `}} />
                     
+                    {/* Cozy Inspiration Prompt Panel */}
+                    <AnimatePresence>
+                      {showPromptPanel && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10, height: 0 }}
+                          animate={{ opacity: 1, y: 0, height: 'auto' }}
+                          exit={{ opacity: 0, y: -10, height: 0 }}
+                          transition={{ duration: 0.25 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="bg-canvas border border-lavender/30 rounded-2xl p-4 my-2 flex flex-col gap-3 relative shadow-inner">
+                            <div className="flex justify-between items-start">
+                              <div className="flex items-center gap-1.5 text-xs text-lavender font-bold uppercase tracking-wider">
+                                <Quote className="w-3.5 h-3.5" />
+                                <span>Cozy Prompt</span>
+                              </div>
+                              <button
+                                onClick={() => setShowPromptPanel(false)}
+                                className="text-espresso/40 hover:text-espresso/70 transition-colors p-0.5 rounded-full hover:bg-canvas cursor-pointer"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                            
+                            <p className="text-sm font-medium text-espresso italic leading-relaxed pl-5 relative before:content-['\201C'] before:absolute before:left-0 before:top-[-4px] before:text-2xl before:text-lavender/40 before:font-serif">
+                              {COZY_PROMPTS[currentPromptIndex]}
+                            </p>
+
+                            <div className="flex justify-between items-center mt-1 border-t border-canvas pt-3">
+                              <button
+                                onClick={() => {
+                                  let nextIndex;
+                                  do {
+                                    nextIndex = Math.floor(Math.random() * COZY_PROMPTS.length);
+                                  } while (nextIndex === currentPromptIndex && COZY_PROMPTS.length > 1);
+                                  setCurrentPromptIndex(nextIndex);
+                                }}
+                                className="flex items-center gap-1 text-[10px] font-bold text-espresso/75 hover:text-espresso transition-colors border border-espresso/10 hover:border-espresso/20 rounded-xl px-2.5 py-1 bg-transparent cursor-pointer"
+                              >
+                                <Shuffle className="w-3 h-3 text-espresso/50" />
+                                Shuffle
+                              </button>
+                              
+                              <button
+                                onClick={() => handleInsertPrompt(COZY_PROMPTS[currentPromptIndex])}
+                                className="flex items-center gap-1 text-[10px] font-bold bg-lavender text-espresso hover:bg-lavender/80 transition-all rounded-xl px-3 py-1 cursor-pointer shadow-sm shadow-lavender/10"
+                              >
+                                <Sparkles className="w-3 h-3" />
+                                Use Prompt
+                              </button>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
                     <div className="relative flex-1 flex flex-col min-h-[400px]">
                       {(!journalText || journalText === '<br>' || journalText === '<div><br></div>') && (
                         <div className="absolute left-0 top-[0.6rem] text-espresso/55 text-sm font-medium pointer-events-none select-none">
