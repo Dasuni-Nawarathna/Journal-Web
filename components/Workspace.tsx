@@ -1212,18 +1212,50 @@ export default function Workspace() {
     if (editorRef.current) setJournalText(editorRef.current.innerHTML);
   };
 
-  // Stub handler to insert prompt into the journal text
+
+
+  // Inserts the selected prompt into the contentEditable rich editor at the current cursor position
   const handleInsertPrompt = (promptText: string) => {
     const editor = editorRef.current;
     if (!editor) return;
-    
-    const promptHtml = `<blockquote>"${promptText}"</blockquote>`;
-    editor.innerHTML += promptHtml;
+
+    editor.focus();
+
+    // Stylized blockquote with thematic borders and italicized prompt text
+    const promptHtml = `<blockquote style="border-left: 3px solid var(--color-lavender, #C4B5FD); padding-left: 12px; margin: 12px 0; color: var(--color-espresso, #2D2A26); opacity: 0.75; font-style: italic;">"${promptText}"</blockquote><p><br></p>`;
+
+    // If editor is empty, set its innerHTML directly
+    if (!editor.innerHTML || editor.innerHTML === '<br>' || editor.innerHTML === '<div><br></div>') {
+      editor.innerHTML = promptHtml;
+    } else {
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        // Make sure caret is actually inside the writing editor
+        if (editor.contains(range.commonAncestorContainer)) {
+          range.deleteContents();
+          const tempDiv = document.createElement("div");
+          tempDiv.innerHTML = promptHtml;
+          const fragment = document.createDocumentFragment();
+          let node;
+          while ((node = tempDiv.firstChild)) {
+            fragment.appendChild(node);
+          }
+          range.insertNode(fragment);
+          range.collapse(false);
+          selection.removeAllRanges();
+          selection.addRange(range);
+        } else {
+          editor.innerHTML += promptHtml;
+        }
+      } else {
+        editor.innerHTML += promptHtml;
+      }
+    }
+
     setJournalText(editor.innerHTML);
     setShowPromptPanel(false);
   };
-
-  // Helper to calculate position for popover controls below selected inline sticker
   const getPopoverStyle = (): React.CSSProperties => {
     if (!selectedInlineSticker || !notebookRef.current) return { display: 'none' };
     const rect = selectedInlineSticker.getBoundingClientRect();
