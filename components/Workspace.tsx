@@ -41,8 +41,29 @@ import {
   Loader2,
   AlignLeft,
   AlignRight,
-  AlignCenter
+  AlignCenter,
+  Shuffle,
+  Quote
 } from 'lucide-react';
+
+// Cozy Inspiration Journal Prompts
+const COZY_PROMPTS = [
+  "What is a small detail of your day that felt peaceful?",
+  "Describe the taste and feeling of your last warm drink.",
+  "Write about a cozy corner in your room and what it looks like.",
+  "What sound brought a smile to your face today?",
+  "List three things you are grateful for this morning/evening.",
+  "If today had a color or texture, what would it be and why?",
+  "Describe a kind interaction you had or witnessed recently.",
+  "What is a gentle reminder or piece of advice you need to hear right now?",
+  "Write about a song or album that has been keeping you company.",
+  "What is something you did today that was purely for yourself?",
+  "Describe the weather today and how it influenced your mood.",
+  "What is a dream or small goal you're looking forward to this week?",
+  "Recall a memory from your childhood that feels warm and comforting.",
+  "What is a scent that makes you feel instantly at home?",
+  "Write about a person who made you feel safe or appreciated recently."
+];
 
 // Sticker Data Model Spec
 interface PlacedSticker {
@@ -124,6 +145,10 @@ export default function Workspace() {
   const [title, setTitle] = useState('');
   const [journalText, setJournalText] = useState('');
   const [selectedMood, setSelectedMood] = useState('🌸');
+  
+  // Cozy Inspiration Prompt States
+  const [showPromptPanel, setShowPromptPanel] = useState(false);
+  const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
   
   // Location States
   const [locationName, setLocationName] = useState('');
