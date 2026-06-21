@@ -1855,19 +1855,35 @@ export default function Workspace() {
                       style={{ caretColor: '#2D2A26' }}
                     />
                     
-                    <div className="flex flex-wrap gap-2 items-center text-[10px] text-espresso/80 pb-3 border-b border-canvas">
-                      <span className="font-semibold text-espresso/85">Vibe today:</span>
-                      <div className="flex gap-1">
-                        {moods.map((m) => (
-                          <button 
-                            key={m}
-                            onClick={() => setSelectedMood(m)}
-                            className={`w-5.5 h-5.5 rounded-full flex items-center justify-center transition-transform active:scale-95 text-xs ${selectedMood === m ? 'bg-lavender/50 scale-110 border border-lavender' : 'hover:bg-canvas'}`}
-                          >
-                            {m}
-                          </button>
-                        ))}
+                    <div className="flex flex-wrap justify-between items-center text-[10px] text-espresso/80 pb-3 border-b border-canvas">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-espresso/85">Vibe today:</span>
+                        <div className="flex gap-1">
+                          {moods.map((m) => (
+                            <button 
+                              key={m}
+                              onClick={() => setSelectedMood(m)}
+                              className={`w-5.5 h-5.5 rounded-full flex items-center justify-center transition-transform active:scale-95 text-xs ${selectedMood === m ? 'bg-lavender/50 scale-110 border border-lavender' : 'hover:bg-canvas'}`}
+                            >
+                              {m}
+                            </button>
+                          ))}
+                        </div>
                       </div>
+                      
+                      {/* Cozy Prompt Toggle Button */}
+                      <button
+                        onClick={() => {
+                          setShowPromptPanel(prev => !prev);
+                          if (!showPromptPanel) {
+                            setCurrentPromptIndex(Math.floor(Math.random() * COZY_PROMPTS.length));
+                          }
+                        }}
+                        className={`flex items-center gap-1.5 px-3 py-1 rounded-xl border transition-all cursor-pointer font-bold text-[9px] uppercase tracking-wider ${showPromptPanel ? 'bg-lavender/40 text-espresso border-lavender shadow-sm' : 'bg-transparent text-espresso/70 border-espresso/15 hover:border-espresso/30'}`}
+                      >
+                        <Sparkles className="w-3 h-3 text-lavender" />
+                        {showPromptPanel ? 'Hide Prompt' : 'Need Inspiration?'}
+                      </button>
                     </div>
 
                     {/* Lined Writing Area */}
