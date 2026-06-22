@@ -150,6 +150,10 @@ export default function Workspace() {
   const [showPromptPanel, setShowPromptPanel] = useState(false);
   const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
   
+  // Word Count & Writing Goal States
+  const [writingGoal, setWritingGoal] = useState<number>(100);
+  const [showGoalSettings, setShowGoalSettings] = useState<boolean>(false);
+  
   // Location States
   const [locationName, setLocationName] = useState('');
   const [locationLat, setLocationLat] = useState<number>(50); // Default to map center
@@ -1271,6 +1275,19 @@ export default function Workspace() {
       transform: 'translateX(-50%)',
       zIndex: 50
     };
+  };
+
+  // Helper to count words inside HTML content of the editor
+  const getWordCount = (html: string): number => {
+    // Strip HTML tags and normalize spacing
+    const cleanText = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!cleanText) return 0;
+    return cleanText.split(/\s+/).filter(Boolean).length;
+  };
+
+  // Helper to calculate estimated reading time
+  const getReadingTime = (wordsCount: number): number => {
+    return Math.max(1, Math.ceil(wordsCount / 200));
   };
 
   // Module A: Local decryption loop helper for rendering clear previews of entries
