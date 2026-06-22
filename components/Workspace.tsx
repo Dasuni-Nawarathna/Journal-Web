@@ -2035,6 +2035,40 @@ export default function Workspace() {
                         }}
                       />
                     </div>
+                    
+                    {/* Minimal Word Count & Writing Goal Tracker */}
+                    {(() => {
+                      const wordsCount = getWordCount(journalText);
+                      const readingTime = getReadingTime(wordsCount);
+                      const percentage = Math.min(100, Math.round((wordsCount / writingGoal) * 100));
+                      
+                      return (
+                        <div className="mt-3 flex flex-col gap-2 border-t border-canvas/60 pt-3 text-[10px] text-espresso/70 select-none">
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-1.5 font-medium">
+                              <span>✍️ {wordsCount} {wordsCount === 1 ? 'word' : 'words'}</span>
+                              <span className="text-espresso/30">•</span>
+                              <span>⏱️ {readingTime} {readingTime === 1 ? 'min' : 'mins'} read</span>
+                            </div>
+                            
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-espresso/80">Goal: {wordsCount}/{writingGoal} words</span>
+                            </div>
+                          </div>
+                          
+                          {/* Progress Bar Container */}
+                          <div className="w-full h-1.5 bg-espresso/5 rounded-full overflow-hidden relative border border-espresso/5">
+                            <motion.div 
+                              className="h-full bg-lavender rounded-full"
+                              style={{ width: `${percentage}%` }}
+                              initial={{ width: 0 }}
+                              animate={{ width: `${percentage}%` }}
+                              transition={{ duration: 0.3 }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   {/* Google Maps Location Picker */}
