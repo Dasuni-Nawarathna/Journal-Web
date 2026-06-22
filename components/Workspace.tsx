@@ -2051,8 +2051,32 @@ export default function Workspace() {
                               <span>⏱️ {readingTime} {readingTime === 1 ? 'min' : 'mins'} read</span>
                             </div>
                             
-                            <div className="flex items-center gap-2">
-                              <span className="font-semibold text-espresso/80">Goal: {wordsCount}/{writingGoal} words</span>
+                            <div className="flex items-center gap-2 relative">
+                              {showGoalSettings ? (
+                                <div className="flex gap-1.5 items-center bg-canvas border border-espresso/10 rounded-lg px-2 py-0.5 shadow-sm">
+                                  <span className="text-[8px] font-bold text-espresso/55 uppercase">Set:</span>
+                                  {[50, 100, 200, 500].map((g) => (
+                                    <button
+                                      key={g}
+                                      onClick={() => {
+                                        setWritingGoal(g);
+                                        setShowGoalSettings(false);
+                                      }}
+                                      className={`px-1.5 py-0.5 rounded text-[8px] font-bold cursor-pointer transition-all ${writingGoal === g ? 'bg-lavender text-espresso' : 'hover:bg-espresso/5 text-espresso/60'}`}
+                                    >
+                                      {g}
+                                    </button>
+                                  ))}
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={() => setShowGoalSettings(true)}
+                                  className="font-semibold text-espresso/80 hover:text-espresso transition-colors flex items-center gap-1 cursor-pointer border border-espresso/10 rounded-lg px-2 py-0.5 hover:bg-espresso/5 active:scale-95 text-[9px]"
+                                  title="Click to adjust goal"
+                                >
+                                  🎯 Goal: {wordsCount}/{writingGoal}
+                                </button>
+                              )}
                             </div>
                           </div>
                           
@@ -2066,6 +2090,18 @@ export default function Workspace() {
                               transition={{ duration: 0.3 }}
                             />
                           </div>
+
+                          {/* Goal Achieved Message */}
+                          {wordsCount >= writingGoal && (
+                            <motion.div
+                              initial={{ opacity: 0, scale: 0.95 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              className="flex items-center gap-1 text-[9px] font-bold text-espresso bg-sage/35 border border-sage rounded-xl px-3 py-1 self-start shadow-sm"
+                            >
+                              <span>✨</span>
+                              <span>Daily writing goal reached! Proud of you!</span>
+                            </motion.div>
+                          )}
                         </div>
                       );
                     })()}
